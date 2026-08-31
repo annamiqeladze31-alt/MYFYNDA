@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MYFYNDA</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--lime:#ccff00;--pink:#ff2d8f;--bg:#070707;--card:#111;--muted:#aaa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
+header{position:sticky;top:0;background:#070707;border-bottom:1px solid #292929;padding:16px;z-index:5}
+nav{max-width:1100px;margin:auto;display:flex;gap:16px;align-items:center}.logo{font-size:30px;font-weight:900}.logo b{color:var(--lime)}
+input{flex:1;background:#111;border:1px solid #333;border-radius:30px;padding:13px 18px;color:white}
+button{border:1px solid #444;background:#111;color:white;border-radius:30px;padding:12px 20px;font-weight:700}.lime{background:var(--lime);color:#000;border:0}
+main{max-width:1100px;margin:auto;padding:25px 18px}.cats{display:flex;gap:10px;overflow:auto;padding-bottom:30px}.cats button.active{background:var(--lime);color:#000}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:25px;align-items:center;padding:35px 0 55px}
+.k{color:var(--pink);font-weight:800;letter-spacing:3px}.hero h1{font-size:clamp(55px,8vw,100px);line-height:.9;margin:18px 0}.hero h1 span{color:var(--lime)}p{color:var(--muted);font-size:19px;line-height:1.5}
+.heroCard{min-height:300px;border:1px solid #333;border-radius:28px;padding:35px;display:flex;align-items:center;background:radial-gradient(circle at 80% 20%,#baff00,transparent 35%),#151515;font-size:38px;font-weight:900}
+.head{display:flex;justify-content:space-between;align-items:center}.head h2{font-size:42px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:var(--card);border:1px solid #292929;border-radius:22px;overflow:hidden;cursor:pointer;position:relative}.pic{height:220px;display:grid;place-items:center;font-size:80px}.a{background:#d8d1c5}.b{background:#ed6699}.c{background:#6e7967}.d{background:#b9aa8f}.info{padding:15px}.info h3{margin:0 0 8px}.meta{color:#aaa}.price{font-size:24px;font-weight:900;margin-top:12px}.heart{position:absolute;right:12px;top:12px;background:#fff;color:#000;padding:10px 14px}
+.modal{display:none;position:fixed;inset:0;background:#000b;z-index:20;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.box{background:#111;border:1px solid #444;border-radius:22px;padding:24px;max-width:600px;width:100%}.close{float:right;border:0;background:none;font-size:28px;padding:0}.form{display:grid;gap:12px}.form input,.form textarea,.form select{background:#070707;color:#fff;border:1px solid #444;border-radius:12px;padding:13px}
+@media(max-width:800px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.pic{height:170px}.heroCard{min-height:200px}.navlinks{display:flex;gap:6px}.navlinks button{padding:10px 11px;font-size:12px}nav{gap:8px;flex-wrap:wrap}nav input{min-width:0;order:3;flex-basis:100%}.modal{align-items:flex-start;overflow-y:auto;padding:10px}.box{max-height:calc(100vh - 20px);overflow-y:auto;margin:auto}.sellgrid{padding-bottom:10px}}
+
+.sellgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sellgrid .full{grid-column:1/-1}.field label{display:block;color:#aaa;font-size:13px;margin:0 0 6px}.field input,.field select,.field textarea{width:100%;background:#070707;color:#fff;border:1px solid #444;border-radius:12px;padding:13px;font:inherit}.field textarea{min-height:110px;resize:vertical}.photoBox{border:1px dashed #555;border-radius:14px;padding:16px;text-align:center;background:#090909}.photoBox input{width:100%;padding:8px;border:0;background:none;border-radius:0}.photoPreview{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.photoPreview img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid #333}.hint{color:#888;font-size:12px;margin-top:5px}@media(max-width:800px){.sellgrid{grid-template-columns:1fr}.sellgrid .full{grid-column:auto}.photoPreview{grid-template-columns:repeat(3,1fr)}}
+</style></head>
+<body>
+<header><nav><div class="logo">MY<b>FYNDA</b></div><input id="search" placeholder="Search anything..."><div class="navlinks"><button onclick="favs()">Favorites</button><button class="lime" onclick="sell()">Sell</button><button id="accountBtn" onclick="openAccount()">Sign in</button></div></nav></header>
+<main>
+<div class="cats" id="cats"></div>
+<section class="hero"><div><div class="k">YOUR NEXT FIND IS HERE</div><h1>FIND IT.<br><span>LOVE IT.</span><br>MAKE IT<br>YOURS.</h1><p>A fresh marketplace for things people love — fashion, tech, home, collectibles and everything in between.</p><button class="lime" onclick="document.getElementById('explore').scrollIntoView({behavior:'smooth'})">Explore finds</button> <button onclick="sell()">Sell something</button></div><div class="heroCard">GOOD<br>FINDS<br>MOVE<br>FAST.</div></section>
+<section id="explore"><div class="head"><h2>Trending now</h2><span id="count"></span></div><div class="grid" id="grid"></div></section>
+</main>
+<div class="modal" id="modal"><div class="box" id="box"></div></div>
+<div class="modal" id="authModal"><div class="box">
+  <button class="close" onclick="closeAuth()">×</button>
+  <h2 id="authTitle">Create your MYFYNDA account</h2>
+  <p id="authHint">Register to save your profile and use MYFYNDA from any device.</p>
+  <div class="form">
+    <input id="authName" placeholder="Display name">
+    <input id="authEmail" type="email" placeholder="Email">
+    <input id="authPassword" type="password" placeholder="Password (min. 6 characters)">
+    <button class="lime" id="authSubmit" onclick="submitAuth()">Create account</button>
+    <button id="authSwitch" onclick="switchAuthMode()">Already have an account? Sign in</button>
+  </div>
+  <p id="authMsg" class="meta"></p>
+</div></div>
+<script>
+const SUPABASE_URL = 'https://yitylprqnzjjbhamujzt.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_e7jx7UvFN7Dxfv59oZnh_g_Qb-QWYFr';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let authMode='signup';
+
+
+function openAccount(){
+  if(window.currentUser){
+    box.innerHTML=`<button class="close" onclick="closeM()">×</button><h2>MYFYNDA account</h2><p>${window.currentUser.email||''}</p><div class="form"><input id="profileName" placeholder="Display name"><button class="lime" onclick="saveProfile()">Save profile</button><button onclick="signOut()">Sign out</button></div><p id="profileMsg" class="meta"></p>`;
+    modal.classList.add('show');
+  } else { authMode='signin'; updateAuthUI(); authModal.classList.add('show'); }
+}
+function openSignup(){ authMode='signup'; updateAuthUI(); authModal.classList.add('show'); }
+function closeAuth(){authModal.classList.remove('show'); document.getElementById('authMsg').textContent=''}
+function switchAuthMode(){authMode=authMode==='signup'?'signin':'signup';updateAuthUI()}
+function updateAuthUI(){
+  document.getElementById('authTitle').textContent=authMode==='signup'?'Create your MYFYNDA account':'Sign in to MYFYNDA';
+  document.getElementById('authHint').textContent=authMode==='signup'?'Register to save your profile and use MYFYNDA from any device.':'Enter your MYFYNDA email and password.';
+  document.getElementById('authName').style.display=authMode==='signup'?'block':'none';
+  document.getElementById('authSubmit').textContent=authMode==='signup'?'Create account':'Sign in';
+  document.getElementById('authSwitch').textContent=authMode==='signup'?'Already have an account? Sign in':'New to MYFYNDA? Create an account';
+}
+async function submitAuth(){
+  const email=authEmail.value.trim(), password=authPassword.value, name=authName.value.trim();
+  authMsg.textContent='';
+  if(!email||!password){authMsg.textContent='Please enter your email and password.';return}
+  if(authMode==='signup' && password.length<6){authMsg.textContent='Password must be at least 6 characters.';return}
+  authSubmit.disabled=true;
+  try{
+    if(authMode==='signup'){
+      const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{display_name:name}}});
+      if(error) throw error;
+      if(data.user){
+        const username=(email.split('@')[0]||'user').toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,30)||'user';
+        const {error:profileError}=await supabaseClient.from('profiles').upsert({id:data.user.id,username,display_name:name||username},{onConflict:'id'});
+        if(profileError) console.warn('Profile creation skipped:',profileError.message);
+      }
+      authMsg.textContent=data.session?'Account created and you are signed in.':'Account created. Check your email to confirm your account.';
+      if(data.session){closeAuth();await refreshAuth()}
+    } else {
+      const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+      if(error) throw error;
+      closeAuth(); await refreshAuth();
+    }
+  }catch(e){authMsg.textContent=e.message||'Something went wrong.'}
+  finally{authSubmit.disabled=false}
+}
+async function refreshAuth(){
+  const {data}=await supabaseClient.auth.getUser();
+  window.currentUser=data.user||null;
+  accountBtn.textContent=window.currentUser?'My account':'Sign in';
+}
+async function signOut(){await supabaseClient.auth.signOut();closeM();await refreshAuth()}
+async function saveProfile(){
+  const name=document.getElementById('profileName').value.trim();
+  const user=window.currentUser;if(!user)return;
+  const {error}=await supabaseClient.from('profiles').upsert({id:user.id,display_name:name},{onConflict:'id'});
+  document.getElementById('profileMsg').textContent=error?error.message:'Profile saved.';
+}
+supabaseClient.auth.onAuthStateChange((_event, session)=>{window.currentUser=session?.user||null; if(typeof accountBtn!=='undefined') accountBtn.textContent=window.currentUser?'My account':'Sign in'});
+refreshAuth();
+
+const products=[
+{id:1,t:'Vintage leather bag',cat:'Fashion',price:45,e:'👜',c:'a',m:'Excellent · Seller ★ 4.9',d:'Classic vintage leather bag in excellent condition.'},
+{id:2,t:'Retro sneakers',cat:'Fashion',price:62,e:'👟',c:'b',m:'Very good · Seller ★ 5.0',d:'Retro-style sneakers, clean and ready to wear.'},
+{id:3,t:'Wooden chair',cat:'Home',price:35,e:'🪑',c:'c',m:'Good · Seller ★ 4.8',d:'Simple solid wooden chair with a warm vintage look.'},
+{id:4,t:'Vintage camera',cat:'Tech',price:85,e:'📷',c:'d',m:'Very good · Seller ★ 4.9',d:'Vintage camera for collectors.'}];
+let cat='All',onlyFav=false,favSet=new Set();
+cats.innerHTML=['All','Fashion','Home','Tech','Collectibles'].map(x=>`<button onclick="setCat('${x}')" class="${x==='All'?'active':''}">${x}</button>`).join('');
+function setCat(x){cat=x;onlyFav=false;document.querySelectorAll('.cats button').forEach(b=>b.classList.toggle('active',b.textContent===x));render()}
+function render(){let q=search.value.toLowerCase();let a=products.filter(p=>(cat==='All'||p.cat===cat)&&(!onlyFav||favSet.has(p.id))&&(!q||p.t.toLowerCase().includes(q)));count.textContent=a.length+' finds';grid.innerHTML=a.map(p=>`<article class="card" onclick="detail(${p.id})"><button class="heart" onclick="event.stopPropagation();toggle(${p.id})">${favSet.has(p.id)?'♥':'♡'}</button><div class="pic ${p.c}">${p.e}</div><div class="info"><h3>${p.t}</h3><div class="meta">${p.m}</div><div class="price">€${p.price}</div></div></article>`).join('')}
+function toggle(id){favSet.has(id)?favSet.delete(id):favSet.add(id);render()}function favs(){onlyFav=true;render()}
+function detail(id){let p=products.find(x=>x.id===id);box.innerHTML=`<button class="close" onclick="closeM()">×</button><h2>${p.t}</h2><div class="pic ${p.c}">${p.e}</div><p>${p.d}</p><h2>€${p.price}</h2><button class="lime" onclick="alert('Purchase will be connected after payment setup.')">Buy now</button>`;modal.classList.add('show')}
+function sell(){
+box.innerHTML=`<button class="close" onclick="closeM()">×</button><h2>Sell something</h2>
+<p class="meta">Add the details buyers need to find and trust your item.</p>
+<div class="sellgrid">
+<div class="field full"><label>Item title *</label><input id="sellTitle" placeholder="e.g. Vintage leather bag"></div>
+<div class="field"><label>Category *</label><select id="sellCat" onchange="updateSellFields()"><option>Fashion</option><option>Shoes</option><option>Bags</option><option>Home</option><option>Furniture</option><option>Tech</option><option>Jewellery</option><option>Vintage</option><option>Collectibles</option><option>Kids</option><option>Other</option></select></div>
+<div class="field"><label>Price (€) *</label><input id="sellPrice" type="number" min="0" step="1" placeholder="45"></div>
+<div class="field"><label>Condition *</label><select id="sellCondition"><option>New</option><option>Excellent</option><option>Very good</option><option>Good</option><option>Used</option></select></div>
+<div class="field" id="sizeField"><label>Size</label><input id="sellSize" placeholder="e.g. EU 38 / M / 120 cm"></div>
+<div class="field"><label>Brand</label><input id="sellBrand" placeholder="Brand or unbranded"></div>
+<div class="field"><label>Colour</label><input id="sellColor" placeholder="Black, beige..." ></div>
+<div class="field"><label>Material</label><input id="sellMaterial" placeholder="Leather, wood, silver..." ></div>
+<div class="field full"><label>Measurements</label><input id="sellMeasurements" placeholder="Length × width × height (cm)"></div>
+<div class="field full"><label>Origin / period</label><input id="sellOrigin" placeholder="e.g. 1970s, Italy, unknown"></div>
+<div class="field full"><label>Photos</label><div class="photoBox">Add up to 8 photos<input id="sellPhotos" type="file" accept="image/*" multiple onchange="previewSellPhotos(event)"><div class="hint">Clear photos help buyers decide faster.</div><div class="photoPreview" id="photoPreview"></div></div></div>
+<div class="field full"><label>Description *</label><textarea id="sellDesc" placeholder="Describe condition, defects, history, authenticity details and anything the buyer should know..."></textarea></div>
+<div class="field full"><button class="lime" style="width:100%" onclick="publishListing()">Publish listing</button></div>
+</div>`;
+modal.classList.add('show'); updateSellFields();
+}
+function updateSellFields(){
+ const c=document.getElementById('sellCat'); const f=document.getElementById('sizeField');
+ if(!c||!f)return; f.style.display=['Shoes','Fashion','Kids'].includes(c.value)?'block':'block';
+ document.getElementById('sellSize').placeholder=c.value==='Shoes'?'EU 36–46':c.value==='Fashion'?'XS / S / M / L / XL':'Size or dimensions';
+}
+function previewSellPhotos(e){
+ const box=document.getElementById('photoPreview'); box.innerHTML=''; [...e.target.files].slice(0,8).forEach(file=>{const img=document.createElement('img');img.src=URL.createObjectURL(file);box.appendChild(img)});
+}
+function publishListing(){
+ const title=document.getElementById('sellTitle').value.trim(),price=document.getElementById('sellPrice').value,desc=document.getElementById('sellDesc').value.trim();
+ if(!title||!price||!desc){alert('Please complete title, price and description.');return}
+ const listing={title,category:document.getElementById('sellCat').value,price,condition:document.getElementById('sellCondition').value,size:document.getElementById('sellSize').value,brand:document.getElementById('sellBrand').value,color:document.getElementById('sellColor').value,material:document.getElementById('sellMaterial').value,measurements:document.getElementById('sellMeasurements').value,origin:document.getElementById('sellOrigin').value,description:desc,createdAt:new Date().toISOString()};
+ const saved=JSON.parse(localStorage.getItem('myfynda_listings')||'[]'); saved.unshift(listing); localStorage.setItem('myfynda_listings',JSON.stringify(saved));
+ closeM(); alert('Listing saved. Next step: connect listings and photos to Supabase so they are visible to every buyer.');
+}
+function closeM(){modal.classList.remove('show')}search.oninput=render;render();
+</script></body></html>
