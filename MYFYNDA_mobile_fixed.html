@@ -144,12 +144,45 @@ function updateSellFields(){
 function previewSellPhotos(e){
  const box=document.getElementById('photoPreview'); box.innerHTML=''; [...e.target.files].slice(0,8).forEach(file=>{const img=document.createElement('img');img.src=URL.createObjectURL(file);box.appendChild(img)});
 }
-function publishListing(){
- const title=document.getElementById('sellTitle').value.trim(),price=document.getElementById('sellPrice').value,desc=document.getElementById('sellDesc').value.trim();
- if(!title||!price||!desc){alert('Please complete title, price and description.');return}
- const listing={title,category:document.getElementById('sellCat').value,price,condition:document.getElementById('sellCondition').value,size:document.getElementById('sellSize').value,brand:document.getElementById('sellBrand').value,color:document.getElementById('sellColor').value,material:document.getElementById('sellMaterial').value,measurements:document.getElementById('sellMeasurements').value,origin:document.getElementById('sellOrigin').value,description:desc,createdAt:new Date().toISOString()};
- const saved=JSON.parse(localStorage.getItem('myfynda_listings')||'[]'); saved.unshift(listing); localStorage.setItem('myfynda_listings',JSON.stringify(saved));
- closeM(); alert('Listing saved. Next step: connect listings and photos to Supabase so they are visible to every buyer.');
+async function publishListing(){
+ const title=document.getElementById('sellTitle').value.trim();
+ const price=document.getElementById('sellPrice').value;
+ const desc=document.getElementById('sellDesc').value.trim();
+
+ if(!title||!price||!desc){
+   alert('Please complete title, price and description.');
+   return;
+ }
+
+ const listing={
+   title,
+   category:document.getElementById('sellCat').value,
+   price,
+   condition:document.getElementById('sellCondition').value,
+   size:document.getElementById('sellSize').value,
+   brand:document.getElementById('sellBrand').value,
+   color:document.getElementById('sellColor').value,
+   material:document.getElementById('sellMaterial').value,
+   measurements:document.getElementById('sellMeasurements').value,
+   origin:document.getElementById('sellOrigin').value,
+   description:desc,
+   createdAt:new Date().toISOString()
+ };
+
+ const sb=window.supabase.createClient(
+   'https://yitylprqnzjjbhamujzt.supabase.co',
+   'sb_publishable_e7jx7UvFN7Dxfv59oZnh_g_Qb-QWYFr'
+ );
+
+ const {error}=await sb.from('listings').insert([listing]);
+
+ if(error){
+   alert('შეცდომა: '+error.message);
+   return;
+ }
+
+ closeM();
+ alert('განცხადება წარმატებით გამოქვეყნდა!');
 }
 function closeM(){modal.classList.remove('show')}search.oninput=render;render();
 </script></body></html>
