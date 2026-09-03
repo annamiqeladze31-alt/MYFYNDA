@@ -144,13 +144,66 @@ function updateSellFields(){
 function previewSellPhotos(e){
  const box=document.getElementById('photoPreview'); box.innerHTML=''; [...e.target.files].slice(0,8).forEach(file=>{const img=document.createElement('img');img.src=URL.createObjectURL(file);box.appendChild(img)});
 }
+async function publishListing(){
+  try{
+    const user=(await supabaseClient.auth.getUser()).data.user;
+    if(!user){ alert('გთხოვთ, ჯერ გაიარეთ ავტორიზაცია'); return; }
 
-   alert('შეცდომა: '+error.message);
-   return;
- }
+    const title=document.getElementById('sellTitle').value.trim();
+    const description=document.getElementById('sellDesc').value.trim();
+    const price=Number(document.getElementById('sellPrice').value);
+    const category=document.getElementById('sellCat').value;
+    const condition=document.getElementById('sellCondition').value;
+    const files=[...document.getElementById('sellPhotos').files].slice(0,8);
 
- closeM();
- alert('განცხადება წარმატებით გამოქვეყნდა!');
+    if(!title||!description||!price){
+      alert('შეავსეთ სათაური, ფასი და აღწერა');
+      return;
+    }
+
+    const {data:listing,error}=await supabaseClient
+      .from('listings')
+      .insert({
+        seller_id:user.id,
+        title,
+        description,
+        price,
+        category,
+        condition,
+        status:'active'
+      })
+      .select()
+      .single();
+
+    if(error) throw error;
+
+    for(const file of files){
+      const path=`${user.id}/${Date.now()}-${file.name}`;
+      const {error:uploadError}=await supabaseClient
+        .storage.from('product-images')
+        .upload(path,file);
+
+      if(uploadError) throw uploadError;
+
+      const {data:urlData}=supabaseClient
+        .storage.from('product-images')
+        .getPublicUrl(path);
+
+      const {error:imageError}=await supabaseClient
+        .from('listing_images')
+        .insert({
+          listing_id:listing.id,
+          image_url:urlData.publicUrl
+        });
+
+      if(imageError) throw imageError;
+    }
+
+    closeM();
+    alert('განცხადება წარმატებით გამოქვეყნდა!');
+  }catch(error){
+    alert('შეცდომა: '+error.message);
+  }
 }
 function closeM(){modal.classList.remove('show')}search.oninput=render;render();
 </script></body></html>
