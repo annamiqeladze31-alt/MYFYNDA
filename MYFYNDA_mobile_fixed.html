@@ -49,10 +49,23 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLI
 let authMode='signup';
 
 
-function openAccount(){
+async function openAccount(){
   if(window.currentUser){
-    box.innerHTML=`<button class="close" onclick="closeM()">×</button><h2>MYFYNDA account</h2><p>${window.currentUser.email||''}</p><div class="form"><input id="profileName" placeholder="Display name"><button class="lime" onclick="saveProfile()">Save profile</button><button onclick="signOut()">Sign out</button></div><p id="profileMsg" class="meta"></p>`;
+    const user=window.currentUser;
+    box.innerHTML=`<button class="close" onclick="closeM()">×</button><h2>MYFYNDA account</h2><p>${user.email||''}</p><div class="form"><input id="profileName" placeholder="Display name"><button class="lime" onclick="saveProfile()">Save profile</button><button onclick="signOut()">Sign out</button></div><p id="profileMsg" class="meta"></p>`;
     modal.classList.add('show');
+
+    const {data:profile,error}=await supabaseClient
+      .from('profiles')
+      .select('display_name')
+      .eq('id',user.id)
+      .maybeSingle();
+
+    if(profile && document.getElementById('profileName')){
+      document.getElementById('profileName').value=profile.display_name||'';
+    } else if(error && document.getElementById('profileMsg')){
+      document.getElementById('profileMsg').textContent=error.message;
+    }
   } else { authMode='signin'; updateAuthUI(); authModal.classList.add('show'); }
 }
 function openSignup(){ authMode='signup'; updateAuthUI(); authModal.classList.add('show'); }
@@ -66,88 +79,270 @@ function updateAuthUI(){
   document.getElementById('authSwitch').textContent=authMode==='signup'?'Already have an account? Sign in':'New to MYFYNDA? Create an account';
 }
 async function submitAuth(){
-  const email=authEmail.value.trim(), password=authPassword.value, name=authName.value.trim();
-  authMsg.textContent='';
-  if(!email||!password){authMsg.textContent='Please enter your email and password.';return}
-  if(authMode==='signup' && password.length<6){authMsg.textContent='Password must be at least 6 characters.';return}
-  authSubmit.disabled=true;
+  const email=document.getElementById('authEmail').value.trim();
+  const password=document.getElementById('authPassword').value;
+  const name=document.getElementById('authName').value.trim();
+  const msg=document.getElementById('authMsg');
+
+  msg.textContent='';
+
+  if(!email||!password){
+    msg.textContent='Please enter email and password.';
+    return;
+  }
+
+  if(authMode==='signup' && password.length<6){
+    msg.textContent='Password must be at least 6 characters.';
+    return;
+  }
+
+  document.getElementById('authSubmit').disabled=true;
+
   try{
     if(authMode==='signup'){
-      const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{display_name:name}}});
+      const {data,error}=await supabaseClient.auth.signUp({
+        email,
+        password,
+        options:{data:{display_name:name}}
+      });
+
       if(error) throw error;
+
       if(data.user){
-        const username=(email.split('@')[0]||'user').toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,30)||'user';
-        const {error:profileError}=await supabaseClient.from('profiles').upsert({id:data.user.id,username,display_name:name||username},{onConflict:'id'});
-        if(profileError) console.warn('Profile creation skipped:',profileError.message);
+        await supabaseClient.from('profiles').upsert({
+          id:data.user.id,
+          display_name:name
+        });
       }
-      authMsg.textContent=data.session?'Account created and you are signed in.':'Account created. Check your email to confirm your account.';
-      if(data.session){closeAuth();await refreshAuth()}
-    } else {
-      const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+
+      msg.textContent='Account created. Check your email if confirmation is required.';
+    }else{
+      const {data,error}=await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
       if(error) throw error;
-      closeAuth(); await refreshAuth();
+
+      window.currentUser=data.user;
+      closeAuth();
+      updateAccountButton();
     }
-  }catch(e){authMsg.textContent=e.message||'Something went wrong.'}
-  finally{authSubmit.disabled=false}
+  }catch(error){
+    msg.textContent=error.message||String(error);
+  }finally{
+    document.getElementById('authSubmit').disabled=false;
+  }
 }
-async function refreshAuth(){
-  const {data}=await supabaseClient.auth.getUser();
-  window.currentUser=data.user||null;
-  accountBtn.textContent=window.currentUser?'My account':'Sign in';
-}
-async function signOut(){await supabaseClient.auth.signOut();closeM();await refreshAuth()}
+
 async function saveProfile(){
   const name=document.getElementById('profileName').value.trim();
-  const user=window.currentUser;if(!user)return;
-  const {error}=await supabaseClient.from('profiles').upsert({id:user.id,display_name:name},{onConflict:'id'});
-  document.getElementById('profileMsg').textContent=error?error.message:'Profile saved.';
-}
-supabaseClient.auth.onAuthStateChange((_event, session)=>{window.currentUser=session?.user||null; if(typeof accountBtn!=='undefined') accountBtn.textContent=window.currentUser?'My account':'Sign in'});
-refreshAuth();
+  const msg=document.getElementById('profileMsg');
 
-const products=[
-{id:1,t:'Vintage leather bag',cat:'Fashion',price:45,e:'👜',c:'a',m:'Excellent · Seller ★ 4.9',d:'Classic vintage leather bag in excellent condition.'},
-{id:2,t:'Retro sneakers',cat:'Fashion',price:62,e:'👟',c:'b',m:'Very good · Seller ★ 5.0',d:'Retro-style sneakers, clean and ready to wear.'},
-{id:3,t:'Wooden chair',cat:'Home',price:35,e:'🪑',c:'c',m:'Good · Seller ★ 4.8',d:'Simple solid wooden chair with a warm vintage look.'},
-{id:4,t:'Vintage camera',cat:'Tech',price:85,e:'📷',c:'d',m:'Very good · Seller ★ 4.9',d:'Vintage camera for collectors.'}];
-let cat='All',onlyFav=false,favSet=new Set();
-cats.innerHTML=['All','Fashion','Home','Tech','Collectibles'].map(x=>`<button onclick="setCat('${x}')" class="${x==='All'?'active':''}">${x}</button>`).join('');
-function setCat(x){cat=x;onlyFav=false;document.querySelectorAll('.cats button').forEach(b=>b.classList.toggle('active',b.textContent===x));render()}
-function render(){let q=search.value.toLowerCase();let a=products.filter(p=>(cat==='All'||p.cat===cat)&&(!onlyFav||favSet.has(p.id))&&(!q||p.t.toLowerCase().includes(q)));count.textContent=a.length+' finds';grid.innerHTML=a.map(p=>`<article class="card" onclick="detail(${p.id})"><button class="heart" onclick="event.stopPropagation();toggle(${p.id})">${favSet.has(p.id)?'♥':'♡'}</button><div class="pic ${p.c}">${p.e}</div><div class="info"><h3>${p.t}</h3><div class="meta">${p.m}</div><div class="price">€${p.price}</div></div></article>`).join('')}
-function toggle(id){favSet.has(id)?favSet.delete(id):favSet.add(id);render()}function favs(){onlyFav=true;render()}
-function detail(id){let p=products.find(x=>x.id===id);box.innerHTML=`<button class="close" onclick="closeM()">×</button><h2>${p.t}</h2><div class="pic ${p.c}">${p.e}</div><p>${p.d}</p><h2>€${p.price}</h2><button class="lime" onclick="alert('Purchase will be connected after payment setup.')">Buy now</button>`;modal.classList.add('show')}
-function sell(){
-box.innerHTML=`<button class="close" onclick="closeM()">×</button><h2>Sell something</h2>
-<p class="meta">Add the details buyers need to find and trust your item.</p>
-<div class="sellgrid">
-<div class="field full"><label>Item title *</label><input id="sellTitle" placeholder="e.g. Vintage leather bag"></div>
-<div class="field"><label>Category *</label><select id="sellCat" onchange="updateSellFields()"><option>Fashion</option><option>Shoes</option><option>Bags</option><option>Home</option><option>Furniture</option><option>Tech</option><option>Jewellery</option><option>Vintage</option><option>Collectibles</option><option>Kids</option><option>Other</option></select></div>
-<div class="field"><label>Price (€) *</label><input id="sellPrice" type="number" min="0" step="1" placeholder="45"></div>
-<div class="field"><label>Condition *</label><select id="sellCondition"><option>New</option><option>Excellent</option><option>Very good</option><option>Good</option><option>Used</option></select></div>
-<div class="field" id="sizeField"><label>Size</label><input id="sellSize" placeholder="e.g. EU 38 / M / 120 cm"></div>
-<div class="field"><label>Brand</label><input id="sellBrand" placeholder="Brand or unbranded"></div>
-<div class="field"><label>Colour</label><input id="sellColor" placeholder="Black, beige..." ></div>
-<div class="field"><label>Material</label><input id="sellMaterial" placeholder="Leather, wood, silver..." ></div>
-<div class="field full"><label>Measurements</label><input id="sellMeasurements" placeholder="Length × width × height (cm)"></div>
-<div class="field full"><label>Origin / period</label><input id="sellOrigin" placeholder="e.g. 1970s, Italy, unknown"></div>
-<div class="field full"><label>Photos</label><div class="photoBox">Add up to 8 photos<input id="sellPhotos" type="file" accept="image/*" multiple onchange="previewSellPhotos(event)"><div class="hint">Clear photos help buyers decide faster.</div><div class="photoPreview" id="photoPreview"></div></div></div>
-<div class="field full"><label>Description *</label><textarea id="sellDesc" placeholder="Describe condition, defects, history, authenticity details and anything the buyer should know..."></textarea></div>
-<div class="field full"><button class="lime" style="width:100%" onclick="publishListing()">Publish listing</button></div>
-</div>`;
-modal.classList.add('show'); updateSellFields();
+  if(!window.currentUser){
+    msg.textContent='Please sign in.';
+    return;
+  }
+
+  const {error}=await supabaseClient.from('profiles').upsert({
+    id:window.currentUser.id,
+    display_name:name
+  });
+
+  msg.textContent=error ? error.message : 'Profile saved.';
+  updateAccountButton();
 }
-function updateSellFields(){
- const c=document.getElementById('sellCat'); const f=document.getElementById('sizeField');
- if(!c||!f)return; f.style.display=['Shoes','Fashion','Kids'].includes(c.value)?'block':'block';
- document.getElementById('sellSize').placeholder=c.value==='Shoes'?'EU 36–46':c.value==='Fashion'?'XS / S / M / L / XL':'Size or dimensions';
+
+async function signOut(){
+  await supabaseClient.auth.signOut();
+  window.currentUser=null;
+  closeM();
+  updateAccountButton();
 }
-function previewSellPhotos(e){
- const box=document.getElementById('photoPreview'); box.innerHTML=''; [...e.target.files].slice(0,8).forEach(file=>{const img=document.createElement('img');img.src=URL.createObjectURL(file);box.appendChild(img)});
+
+function updateAccountButton(){
+  const btn=document.getElementById('accountBtn');
+  if(!btn)return;
+  btn.textContent=window.currentUser?'Account':'Sign in';
 }
+
+async function loadSession(){
+  const {data}=await supabaseClient.auth.getSession();
+  window.currentUser=data.session?.user||null;
+  updateAccountButton();
+}
+
+supabaseClient.auth.onAuthStateChange((_event,session)=>{
+  window.currentUser=session?.user||null;
+  updateAccountButton();
+});
+
+loadSession();
+
+const categories=[
+  'All','Women','Men','Kids','Home','Electronics',
+  'Collectibles','Vintage','Luxury','Beauty','Sports','Other'
+];
+
+const cats=document.getElementById('cats');
+let activeCategory='All';
+
+cats.innerHTML=categories.map(c=>
+  `<button class="${c==='All'?'active':''}" onclick="setCategory('${c}')">${c}</button>`
+).join('');
+
+function setCategory(category){
+  activeCategory=category;
+  [...cats.children].forEach(b=>{
+    b.classList.toggle('active',b.textContent===category);
+  });
+  render();
+}
+
+const demoListings=[
+  {title:'Vintage leather bag',category:'Vintage',price:'120',condition:'Very good',className:'a'},
+  {title:'Pink statement jacket',category:'Women',price:'85',condition:'Like new',className:'b'},
+  {title:'Retro home vase',category:'Home',price:'60',condition:'Good',className:'c'},
+  {title:'Classic desk lamp',category:'Home',price:'95',condition:'Very good',className:'d'}
+];
+
+let liveListings=[];
+
+async function loadListings(){
+  const {data,error}=await supabaseClient
+    .from('listings')
+    .select('id,title,description,price,category,condition,status,created_at')
+    .eq('status','active')
+    .order('created_at',{ascending:false});
+
+  if(!error && Array.isArray(data)){
+    liveListings=data;
+  }else{
+    liveListings=[];
+  }
+
+  render();
+}
+
+function escapeHtml(value){
+  return String(value??'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+function filteredListings(){
+  const q=(document.getElementById('search').value||'').trim().toLowerCase();
+
+  const all=[
+    ...liveListings.map(x=>({
+      ...x,
+      className:'a',
+      live:true
+    })),
+    ...demoListings
+  ];
+
+  return all.filter(item=>{
+    const categoryOk=
+      activeCategory==='All' ||
+      String(item.category||'').toLowerCase()===activeCategory.toLowerCase();
+
+    const text=[
+      item.title,
+      item.description,
+      item.category,
+      item.condition
+    ].join(' ').toLowerCase();
+
+    return categoryOk && (!q || text.includes(q));
+  });
+}
+
+function render(){
+  const list=filteredListings();
+  document.getElementById('count').textContent=`${list.length} finds`;
+
+  document.getElementById('grid').innerHTML=list.map(item=>{
+    const title=escapeHtml(item.title);
+    const category=escapeHtml(item.category||'Other');
+    const condition=escapeHtml(item.condition||'');
+    const price=escapeHtml(item.price||'0');
+
+    return `
+      <article class="card" onclick="${item.live?`openListing('${item.id}')`:''}">
+        <button class="heart" onclick="event.stopPropagation();toggleFavorite('${item.id||item.title}')">♡</button>
+        <div class="pic ${item.className||'a'}">${item.live?'✦':'✧'}</div>
+        <div class="info">
+          <h3>${title}</h3>
+          <div class="meta">${category} · ${condition}</div>
+          <div class="price">€${price}</div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  if(!list.length){
+    document.getElementById('grid').innerHTML=
+      '<p style="grid-column:1/-1;color:#aaa">No finds found.</p>';
+  }
+}
+
+document.getElementById('search').addEventListener('input',render);
+
+async function toggleFavorite(id){
+  if(!window.currentUser){
+    openAccount();
+    return;
+  }
+
+  const {data:existing,error:findError}=await supabaseClient
+    .from('favorites')
+    .select('id')
+    .eq('user_id',window.currentUser.id)
+    .eq('listing_id',id)
+    .maybeSingle();
+
+  if(findError)return;
+
+  if(existing){
+    await supabaseClient.from('favorites').delete().eq('id',existing.id);
+  }else{
+    await supabaseClient.from('favorites').insert({
+      user_id:window.currentUser.id,
+      listing_id:id
+    });
+  }
+}
+
+async function favs(){
+  if(!window.currentUser){
+    openAccount();
+    return;
+  }
+
+  const {data,error}=await supabaseClient
+    .from('favorites')
+    .select('listing_id')
+    .eq('user_id',window.currentUser.id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  alert(`You have ${data?.length||0} favorite(s).`);
+}
+  <script>
 async function publishListing(){
   try{
-    const user=(await supabaseClient.auth.getUser()).data.user;
-    if(!user){ alert('გთხოვთ, ჯერ გაიარეთ ავტორიზაცია'); return; }
+    const {data:{user}}=await supabaseClient.auth.getUser();
+    if(!user){
+      alert('Please sign in before publishing.');
+      return;
+    }
 
     const title=document.getElementById('sellTitle').value.trim();
     const description=document.getElementById('sellDesc').value.trim();
@@ -156,8 +351,8 @@ async function publishListing(){
     const condition=document.getElementById('sellCondition').value;
     const files=[...document.getElementById('sellPhotos').files].slice(0,8);
 
-    if(!title||!description||!price){
-      alert('შეავსეთ სათაური, ფასი და აღწერა');
+    if(!title||!price||!description){
+      alert('Please complete title, price and description.');
       return;
     }
 
@@ -177,33 +372,46 @@ async function publishListing(){
 
     if(error) throw error;
 
-    for(const file of files){
-      const path=`${user.id}/${Date.now()}-${file.name}`;
+    for(let i=0;i<files.length;i++){
+      const file=files[i];
+      const path=user.id+'/'+listing.id+'/'+Date.now()+'_'+i+'_'+file.name;
+
       const {error:uploadError}=await supabaseClient
-        .storage.from('product-images')
+        .storage
+        .from('product-images')
         .upload(path,file);
 
       if(uploadError) throw uploadError;
 
       const {data:urlData}=supabaseClient
-        .storage.from('product-images')
+        .storage
+        .from('product-images')
         .getPublicUrl(path);
 
       const {error:imageError}=await supabaseClient
         .from('listing_images')
         .insert({
           listing_id:listing.id,
-          image_url:urlData.publicUrl
+          image_url:urlData.publicUrl,
+          sort_order:i
         });
 
       if(imageError) throw imageError;
     }
 
     closeM();
-    alert('განცხადება წარმატებით გამოქვეყნდა!');
+    alert('Listing published successfully!');
   }catch(error){
-    alert('შეცდომა: '+error.message);
+    alert('Error: '+(error.message||error));
   }
 }
-function closeM(){modal.classList.remove('show')}search.oninput=render;render();
-</script></body></html>
+
+function closeM(){
+  modal.classList.remove('show');
+}
+
+search.oninput=render;
+render();
+</script>
+</body>
+</html>
