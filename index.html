@@ -1,401 +1,720 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080808">
 <title>MYFYNDA — Find it. Love it. Make it yours.</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--lime:#caff00;--pink:#ff2d8f;--bg:#070707;--surface:#101010;--surface2:#151515;--line:#292929;--text:#fff;--muted:#9d9d9d;--radius:22px}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}.container{width:min(1200px,calc(100% - 36px));margin:auto}
-header{position:sticky;top:0;z-index:40;background:rgba(7,7,7,.92);border-bottom:1px solid var(--line)}.nav{height:76px;display:flex;align-items:center;gap:18px}.logo{font-size:29px;font-weight:900;letter-spacing:-2px;white-space:nowrap}.logo span{color:var(--lime)}.searchWrap{position:relative;flex:1;max-width:540px;margin-left:auto}.search{width:100%;border:1px solid #303030;background:#141414;color:#fff;border-radius:999px;padding:13px 18px 13px 44px;outline:none}.searchIcon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#777}.navlinks{display:flex;gap:18px;color:#ccc;font-size:14px;font-weight:700}.navlinks button{background:none;border:0;color:inherit}.pill{border:1px solid #363636;background:#121212;color:#fff;border-radius:999px;padding:11px 17px;font-weight:900}.pill.lime{background:var(--lime);border-color:var(--lime);color:#000}.iconBtn{width:42px;height:42px;border-radius:50%;border:1px solid #303030;background:#121212;color:#fff}.mobileMenu{display:none}
-.hero{padding:78px 0 52px;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}.eyebrow{color:var(--pink);font-weight:900;letter-spacing:2.5px;text-transform:uppercase;font-size:14px}.hero h1{font-size:clamp(58px,8vw,104px);line-height:.86;letter-spacing:-7px;margin:18px 0 25px}.hero h1 span{color:var(--lime)}.hero p{font-size:19px;line-height:1.55;color:#c5c5c5;max-width:590px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.heroVisual{min-height:440px;border:1px solid #292929;border-radius:34px;background:radial-gradient(circle at 75% 18%,rgba(202,255,0,.85),transparent 28%),linear-gradient(145deg,#171717,#0b0b0b);position:relative;overflow:hidden;padding:34px}.heroVisual h2{position:relative;z-index:2;font-size:58px;line-height:.9;letter-spacing:-4px;max-width:340px;margin:0}.sticker{position:absolute;bottom:28px;left:28px;background:var(--pink);padding:13px 17px;font-weight:900;transform:rotate(-5deg)}.floatingPrice{position:absolute;right:26px;bottom:30px;background:#0c0c0c;border:1px solid #3a3a3a;border-radius:16px;padding:12px 15px}.floatingPrice strong{font-size:22px}
-.section{padding:30px 0}.sectionHead{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}.sectionHead h2{font-size:32px;margin:0}.muted{color:var(--muted)}.categories{display:flex;gap:9px;overflow:auto;padding:4px 0 12px}.chip{white-space:nowrap;border:1px solid #333;background:#101010;color:#ddd;border-radius:999px;padding:10px 15px;font-weight:800}.chip.active{background:var(--lime);border-color:var(--lime);color:#000}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.card{background:var(--surface);border:1px solid #282828;border-radius:20px;overflow:hidden;position:relative}.photo{aspect-ratio:1;background:#1a1a1a;display:grid;place-items:center;font-size:66px}.photo img{width:100%;height:100%;object-fit:cover}.photo.bag{background:#d9d1c6}.photo.shoes{background:#e66d96}.photo.home{background:#69725f}.photo.tech{background:#b9ab90}.cardBody{padding:14px}.titleRow{display:flex;justify-content:space-between;gap:10px}.title{font-weight:900}.meta{font-size:13px;color:#8e8e8e;margin-top:7px}.price{font-size:20px;font-weight:900;margin-top:10px}.heart{position:absolute;right:12px;top:12px;width:39px;height:39px;border:0;border-radius:50%;background:#fff;color:#000;font-size:21px;z-index:3}.heart.on{color:var(--pink)}.tag{font-size:11px;border:1px solid #3a3a3a;border-radius:999px;padding:5px 8px;color:#bdbdbd}.banner{margin:34px 0 15px;background:var(--lime);color:#000;border-radius:28px;padding:34px;display:flex;justify-content:space-between;align-items:center;gap:20px}.banner h2{margin:0;font-size:43px;line-height:.94}.darkBtn{background:#080808;color:#fff;border:0;border-radius:999px;padding:14px 20px;font-weight:900}
-footer{margin-top:70px;border-top:1px solid var(--line);padding:35px 0 50px;color:#888}.footerRow{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footerBrand{color:#fff;font-weight:900;font-size:20px}
-.overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.72);display:none;padding:18px;overflow:auto}.overlay.show{display:block}.modal{width:min(620px,100%);margin:7vh auto;background:#111;border:1px solid #333;border-radius:26px;overflow:hidden}.modalHead{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid #292929}.modalHead h2{margin:0;font-size:25px}.close{border:0;background:#222;color:#fff;width:38px;height:38px;border-radius:50%;font-size:22px}.modalBody{padding:22px}.field{margin-bottom:15px}.field label{display:block;font-weight:800;margin-bottom:7px}.field input,.field textarea,.field select{width:100%;background:#0a0a0a;color:#fff;border:1px solid #343434;border-radius:13px;padding:13px 14px;outline:none}.field textarea{min-height:120px;resize:vertical}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.upload{border:1px dashed #555;border-radius:17px;padding:24px;text-align:center;background:#0d0d0d;color:#aaa}.upload strong{display:block;color:#fff;margin-bottom:5px}.modalActions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}.toast{position:fixed;z-index:200;right:18px;bottom:18px;background:#fff;color:#000;padding:13px 16px;border-radius:14px;font-weight:800;opacity:0;pointer-events:none;transition:.25s}.toast.show{opacity:1}.empty{padding:35px;text-align:center;border:1px dashed #3a3a3a;border-radius:20px;color:#999;grid-column:1/-1}
-@media(max-width:900px){.navlinks{display:none}.mobileMenu{display:block}.hero{grid-template-columns:1fr}.heroVisual{min-height:330px}.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.container{width:calc(100% - 24px)}.searchWrap{display:none}.hero h1{font-size:58px;letter-spacing:-4px}.grid{gap:10px}.two{grid-template-columns:1fr}.banner{display:block}.modal{margin:3vh auto}}
+:root{
+  --bg:#08090b;--panel:#111318;--panel2:#17191f;--lime:#c8ff35;
+  --pink:#ff8fcf;--text:#f6f7f9;--muted:#9297a3;--line:#272a31;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.top{
+  position:sticky;top:0;z-index:20;background:rgba(8,9,11,.94);
+  backdrop-filter:blur(18px);border-bottom:1px solid var(--line)
+}
+.nav{max-width:1200px;margin:auto;padding:16px 20px;display:flex;align-items:center;gap:18px}
+.logo{font-size:27px;font-weight:950;letter-spacing:-1.5px}
+.logo span{color:var(--lime)}
+.search{flex:1;background:#17191e;border:1px solid #30333a;border-radius:14px;padding:12px 15px;color:white;outline:none}
+.nav button,.btn{
+  border:0;border-radius:13px;padding:11px 15px;background:var(--lime);color:#08090b;font-weight:800
+}
+.ghost{background:#191b20!important;color:white!important;border:1px solid #30333a!important}
+.hero{max-width:1200px;margin:auto;padding:45px 20px 25px}
+.hero h1{font-size:clamp(38px,7vw,76px);line-height:.95;margin:0;letter-spacing:-4px}
+.hero h1 span{color:var(--lime)}
+.hero p{color:var(--muted);font-size:17px;margin:18px 0 0}
+.wrap{max-width:1200px;margin:auto;padding:20px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:25px 0 15px}
+.section-title h2{margin:0;font-size:22px}
+.categories{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.cat{
+ background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:20px;
+ min-height:110px;text-align:left;color:white;transition:.15s
+}
+.cat:hover{border-color:var(--lime);transform:translateY(-2px)}
+.cat .icon{font-size:27px}.cat strong{display:block;margin-top:12px}.cat small{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.card img{width:100%;aspect-ratio:1;object-fit:cover;background:#191b20}
+.card-body{padding:12px}.price{font-weight:900;color:var(--lime);font-size:18px}.muted{color:var(--muted);font-size:13px}
+.empty{padding:50px 20px;text-align:center;color:var(--muted)}
+.modal-bg{
+ display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;
+ align-items:center;justify-content:center;padding:15px
+}
+.modal-bg.show{display:flex}
+.modal{
+ background:#101216;border:1px solid #30333a;border-radius:22px;width:min(720px,100%);
+ max-height:92vh;overflow:auto;padding:22px
+}
+.modal h2{margin-top:0}
+.close{float:right;background:#202329;color:white;border:0;border-radius:10px;padding:8px 11px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}
+.field{
+ width:100%;background:#181a20;border:1px solid #30333a;border-radius:12px;
+ color:white;padding:12px;outline:none
+}
+.field:focus{border-color:var(--lime)}
+textarea.field{min-height:110px;resize:vertical}
+.filebox{border:1px dashed #444851;border-radius:14px;padding:18px;text-align:center}
+.preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.preview img{width:75px;height:75px;border-radius:9px;object-fit:cover}
+.actions{display:flex;gap:10px;margin-top:18px}
+.actions button{flex:1}
+.category-path{
+ display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+ color:var(--muted);margin-bottom:16px
+}
+.category-path button{background:none;border:0;color:var(--lime);padding:0}
+.category-list{display:grid;gap:8px}
+.category-row{
+ display:flex;justify-content:space-between;align-items:center;
+ padding:16px;border:1px solid var(--line);background:var(--panel);
+ border-radius:13px;color:white
+}
+.category-row:hover{border-color:var(--lime)}
+.brand-results{
+ position:absolute;left:0;right:0;top:100%;background:#15171c;
+ border:1px solid #363941;border-radius:12px;max-height:260px;overflow:auto;z-index:50
+}
+.brand-wrap{position:relative}
+.brand-item{padding:11px 13px;border-bottom:1px solid #25272d;cursor:pointer}
+.brand-item:hover{background:#22252c}
+.badge{display:inline-block;padding:4px 8px;border-radius:8px;background:#24272d;color:var(--pink);font-size:11px}
+.bottom{
+ position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(10,11,14,.95);
+ border-top:1px solid var(--line);display:none;padding:9px
+}
+.bottom-inner{display:flex;justify-content:space-around}
+.bottom button{background:none;border:0;color:#a8adb8;font-size:12px}
+.bottom .sell{color:var(--lime);font-weight:900}
+@media(max-width:800px){
+ .nav{padding:12px}.nav .search{display:none}
+ .categories{grid-template-columns:repeat(2,1fr)}
+ .cards{grid-template-columns:repeat(2,1fr)}
+ .hero{padding-top:30px}.form{grid-template-columns:1fr}
+ .bottom{display:block}.wrap{padding-bottom:80px}
+}
 </style>
 </head>
 <body>
 
-<header><div class="container nav">
-<a class="logo" href="#top">MY<span>FYNDA</span></a>
-<div class="searchWrap"><span class="searchIcon">⌕</span><input id="search" class="search" placeholder="Search fashion, home, tech…" autocomplete="off"></div>
-<nav class="navlinks"><button onclick="scrollToId('explore')">Explore</button><button onclick="showFavorites()">Favorites</button><button id="accountBtn" onclick="openAccount()">Sign in</button></nav>
-<button class="iconBtn mobileMenu" onclick="showMenu()">☰</button>
-<button class="pill lime" onclick="openSell()">Sell</button>
-</div></header>
+<header class="top">
+ <div class="nav">
+   <div class="logo">MY<span>FYNDA</span></div>
+   <input id="mainSearch" class="search" placeholder="Search finds, brands, categories...">
+   <button class="ghost" onclick="openAuth()">Account</button>
+   <button onclick="openSell()">＋ Sell</button>
+ </div>
+</header>
 
-<main id="top">
-<section class="container hero">
-<div><div class="eyebrow">Your next find is here</div><h1>FIND IT.<br><span>LOVE IT.</span><br>MAKE IT YOURS.</h1><p>A fresh marketplace for things people love — fashion, tech, home, collectibles and everything in between.</p><div class="actions"><button class="pill lime" onclick="scrollToId('explore')">Explore finds</button><button class="pill" onclick="openSell()">Sell something</button></div></div>
-<div class="heroVisual"><h2>GOOD FINDS<br>MOVE FAST.</h2><div class="sticker">MYFYNDA ✦</div><div class="floatingPrice"><span class="muted">Featured find</span><br><strong>€75</strong></div></div>
+<section class="hero">
+ <h1>FIND IT.<br><span>LOVE IT.</span><br>MAKE IT YOURS.</h1>
+ <p>A marketplace for fashion, vintage, design, collectibles and everything worth finding.</p>
 </section>
 
-<section class="container section" id="explore">
-<div class="sectionHead"><div><h2>Explore</h2><div class="muted">Discover fresh finds</div></div><button class="pill" onclick="clearFilters()">Reset</button></div>
-<div class="categories" id="categories"></div>
-</section>
+<main class="wrap">
 
-<section class="container section">
-<div class="sectionHead"><div><h2>Trending now</h2><div class="muted" id="resultCount"></div></div></div>
-<div class="grid" id="productGrid"></div>
-<div class="banner"><div><h2>Got good stuff?<br>Put it back in motion.</h2><p>List it beautifully and reach buyers.</p></div><button class="darkBtn" onclick="openSell()">Start selling →</button></div>
-</section>
+ <div class="section-title">
+   <h2>Explore categories</h2>
+ </div>
+ <div id="categories" class="categories"></div>
+
+ <div class="section-title">
+   <h2>Latest FYNDs</h2>
+   <span id="count" class="muted"></span>
+ </div>
+ <div id="listings" class="cards"></div>
+
 </main>
 
-<footer><div class="container footerRow"><div><div class="footerBrand">MYFYNDA</div><div>Find it · Love it · Make it yours.</div></div><div>© 2026 MYFYNDA</div></div></footer>
+<div class="modal-bg" id="categoryModal">
+ <div class="modal">
+   <button class="close" onclick="closeModal('categoryModal')">✕</button>
+   <h2 id="catTitle">Categories</h2>
+   <div id="categoryContent"></div>
+ </div>
+</div>
 
-<div class="overlay" id="sellOverlay" onclick="outsideClose(event,'sellOverlay')"><div class="modal"><div class="modalHead"><h2>Sell an item</h2><button class="close" onclick="closeModal('sellOverlay')">×</button></div><div class="modalBody">
-<div class="upload"><strong>Add your photos</strong><span>Select up to 8 photos.</span><input id="sellPhotos" type="file" accept="image/*" multiple onchange="previewFiles()" style="display:block;width:100%;margin-top:12px;color:#aaa"><div id="photoPreview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px"></div></div>
-<div class="field"><label>Item title</label><input id="sellTitle" placeholder="e.g. Vintage Italian glass lamp"></div>
-<div class="two"><div class="field"><label>Price (€)</label><input id="sellPrice" type="number" min="0" step="0.01" placeholder="90"></div><div class="field"><label>Category</label><select id="sellCat"><option>Fashion</option><option>Home</option><option>Tech</option><option>Shoes</option><option>Bags</option><option>Kids</option><option>Vintage</option><option>Collectibles</option></select></div></div>
-<div class="field"><label>Condition</label><select id="sellCondition"><option>Excellent</option><option>Very good</option><option>Good</option><option>Fair</option></select></div>
-<div class="field"><label>Description</label><textarea id="sellDesc" placeholder="Describe condition, measurements, origin and anything buyers should know…"></textarea></div>
-<div class="modalActions"><button class="pill" onclick="closeModal('sellOverlay')">Cancel</button><button class="pill lime" onclick="publishListing()">Publish listing</button></div>
-</div></div></div>
+<div class="modal-bg" id="sellModal">
+ <div class="modal">
+  <button class="close" onclick="closeModal('sellModal')">✕</button>
+  <h2>Sell your FYND</h2>
 
-<div class="overlay" id="detailOverlay" onclick="outsideClose(event,'detailOverlay')"><div class="modal"><div class="modalHead"><h2 id="dTitle">Item</h2><button class="close" onclick="closeModal('detailOverlay')">×</button></div><div class="modalBody" id="detailBody"></div></div></div>
+  <div class="form">
+   <div class="full">
+    <label>Title</label>
+    <input id="fTitle" class="field" placeholder="What are you selling?">
+   </div>
 
-<div class="overlay" id="authOverlay" onclick="outsideClose(event,'authOverlay')"><div class="modal"><div class="modalHead"><h2 id="authTitle">Sign in to MYFYNDA</h2><button class="close" onclick="closeModal('authOverlay')">×</button></div><div class="modalBody">
-<div class="field" id="nameField"><label>Name</label><input id="authName" placeholder="Your name"></div>
-<div class="field"><label>Email</label><input id="authEmail" type="email" placeholder="you@example.com"></div>
-<div class="field"><label>Password</label><input id="authPassword" type="password" minlength="6" placeholder="At least 6 characters"></div>
-<p class="muted" id="authMsg"></p>
-<div class="modalActions"><button class="pill" onclick="switchAuth()" id="authSwitch">Create account</button><button class="pill lime" onclick="submitAuth()" id="authSubmit">Sign in</button></div>
-</div></div></div>
+   <div>
+    <label>Category</label>
+    <input id="fCategory" class="field" readonly placeholder="Choose category" onclick="openCategoryPicker()">
+   </div>
 
-<div class="toast" id="toast"></div>
+   <div>
+    <label>Price</label>
+    <input id="fPrice" class="field" type="number" min="0" step="0.01" placeholder="0.00">
+   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+   <div>
+    <label>Condition</label>
+    <select id="fCondition" class="field">
+     <option value="">Select condition</option>
+     <option>New with tags</option>
+     <option>New without tags</option>
+     <option>Very good</option>
+     <option>Good</option>
+     <option>Satisfactory</option>
+     <option>Antique / collectible</option>
+    </select>
+   </div>
+
+   <div>
+    <label>Size</label>
+    <input id="fSize" class="field" placeholder="e.g. M / 38 / 10">
+   </div>
+
+   <div class="full brand-wrap">
+    <label>Brand</label>
+    <input id="brandInput" class="field" autocomplete="off"
+      placeholder="Search and choose a brand..."
+      oninput="searchBrands(this.value)"
+      onclick="searchBrands(this.value)">
+    <div id="brandResults" class="brand-results" style="display:none"></div>
+   </div>
+
+   <div>
+    <label>Colour</label>
+    <input id="fColor" class="field" placeholder="Black">
+   </div>
+
+   <div>
+    <label>Material</label>
+    <input id="fMaterial" class="field" placeholder="Leather, cotton...">
+   </div>
+
+   <div>
+    <label>Measurements</label>
+    <input id="fMeasurements" class="field" placeholder="Optional">
+   </div>
+
+   <div>
+    <label>Origin / Period</label>
+    <input id="fOrigin" class="field" placeholder="France, 1970s...">
+   </div>
+
+   <div class="full">
+    <label>Photos — up to 8</label>
+    <div class="filebox">
+      <input id="photos" type="file" accept="image/*" multiple>
+      <div id="preview" class="preview"></div>
+    </div>
+   </div>
+
+   <div class="full">
+    <label>Description</label>
+    <textarea id="fDescription" class="field" placeholder="Describe your item..."></textarea>
+   </div>
+  </div>
+
+  <div class="actions">
+   <button class="ghost btn" onclick="closeModal('sellModal')">Cancel</button>
+   <button class="btn" onclick="publishListing()">Publish FYND</button>
+  </div>
+ </div>
+</div>
+
+<div class="modal-bg" id="authModal">
+ <div class="modal">
+  <button class="close" onclick="closeModal('authModal')">✕</button>
+  <h2>MYFYNDA Account</h2>
+  <div class="form">
+   <div class="full">
+    <label>Email</label>
+    <input id="authEmail" class="field" type="email" placeholder="you@email.com">
+   </div>
+   <div class="full">
+    <label>Password</label>
+    <input id="authPassword" class="field" type="password" placeholder="Password">
+   </div>
+  </div>
+  <div class="actions">
+   <button class="ghost btn" onclick="signUp()">Create account</button>
+   <button class="btn" onclick="signIn()">Sign in</button>
+  </div>
+  <p id="authStatus" class="muted"></p>
+ </div>
+</div>
+
+<div class="modal-bg" id="pickerModal">
+ <div class="modal">
+  <button class="close" onclick="closeModal('pickerModal')">✕</button>
+  <h2>Choose category</h2>
+  <div id="pickerContent"></div>
+ </div>
+</div>
+
+<nav class="bottom">
+ <div class="bottom-inner">
+  <button onclick="window.scrollTo({top:0,behavior:'smooth'})">⌂<br>Home</button>
+  <button onclick="showAll()">⌕<br>Search</button>
+  <button class="sell" onclick="openSell()">＋<br>Sell</button>
+  <button onclick="openAuth()">♙<br>Account</button>
+ </div>
+</nav>
+
 <script>
-const SUPABASE_URL='https://yitylprqnzjjbhamujzt.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_e7jx7UvFN7Dxfv59oZnh_g_Qb-QWYFr';
-const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const SUPABASE_URL="https://yitylprqnzjjbhamujzt.supabase.co";
+const SUPABASE_KEY="sb_publishable_e7jx7UvFN7Dxfv59oZnh_g_Qb-QWYFr";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const cats=['All','Fashion','Home','Tech','Shoes','Bags','Kids','Vintage','Collectibles'];
-let listings=[],favorites=new Set(),activeCat='All',currentUser=null,authMode='signin';
+/* =========================
+   MYFYNDA CATEGORY SYSTEM
+   ========================= */
 
-const seed=[
-{id:'seed-1',title:'Vintage leather bag',price:45,cat:'Bags',condition:'Excellent',desc:'Classic leather bag with a timeless silhouette.',emoji:'👜'},
-{id:'seed-2',title:'Retro sneakers',price:62,cat:'Shoes',condition:'Very good',desc:'Clean retro sneakers, lightly worn.',emoji:'👟'},
-{id:'seed-3',title:'Mid-century chair',price:90,cat:'Home',condition:'Good',desc:'Warm wood chair with original character.',emoji:'🪑'},
-{id:'seed-4',title:'Film camera',price:75,cat:'Tech',condition:'Excellent',desc:'Vintage film camera for collectors.',emoji:'📷'}
-];
+const CATEGORIES={
+ Women:{
+  icon:"♀",children:{
+   Clothing:["Dresses","Tops","Blouses","Shirts","T-Shirts","Sweaters","Hoodies","Jackets","Coats","Blazers","Jeans","Trousers","Skirts","Shorts","Activewear","Swimwear","Lingerie","Sleepwear"],
+   Shoes:["Sneakers","Boots","Ankle Boots","Heels","Flats","Sandals","Loafers","Slippers","Sports Shoes"],
+   Bags:["Handbags","Shoulder Bags","Crossbody Bags","Tote Bags","Clutches","Backpacks","Travel Bags","Wallets"],
+   Accessories:["Belts","Scarves","Hats","Gloves","Sunglasses","Hair Accessories"],
+   Jewellery:["Necklaces","Earrings","Bracelets","Rings","Brooches"],
+   Watches:["Wrist Watches","Smart Watches","Watch Accessories"],
+   Beauty:["Makeup","Skincare","Haircare","Perfume","Tools"]
+  }
+ },
+ Men:{
+  icon:"♂",children:{
+   Clothing:["T-Shirts","Shirts","Sweaters","Hoodies","Jackets","Coats","Suits","Blazers","Jeans","Trousers","Shorts","Activewear","Swimwear","Underwear"],
+   Shoes:["Sneakers","Boots","Loafers","Formal Shoes","Sandals","Sports Shoes"],
+   Bags:["Backpacks","Briefcases","Crossbody Bags","Travel Bags","Wallets"],
+   Accessories:["Belts","Ties","Scarves","Hats","Gloves","Sunglasses"],
+   Jewellery:["Necklaces","Bracelets","Rings","Cufflinks"],
+   Watches:["Wrist Watches","Smart Watches","Watch Accessories"]
+  }
+ },
+ Kids:{
+  icon:"♧",children:{
+   Girls:["Clothing","Shoes","Bags","Accessories","Jewellery"],
+   Boys:["Clothing","Shoes","Bags","Accessories"],
+   Baby:["Baby Clothing","Baby Shoes","Baby Accessories","Nursery"],
+   Toys:["Dolls","Building Toys","Collectible Toys","Educational Toys","Outdoor Toys","Games"],
+   Kids Accessories:["School Bags","Hats","Sunglasses","Hair Accessories"]
+  }
+ },
+ Home:{
+  icon:"⌂",children:{
+   Furniture:["Chairs","Tables","Desks","Cabinets","Dressers","Sofas","Beds","Benches"],
+   "Home Decor":["Mirrors","Vases","Frames","Candles","Figurines","Clocks","Decorative Objects"],
+   Lighting:["Chandeliers","Pendant Lights","Table Lamps","Floor Lamps","Wall Lights"],
+   "Kitchen & Dining":["Dinnerware","Glassware","Cutlery","Serving","Cookware","Kitchen Tools"],
+   Textiles:["Rugs","Curtains","Cushions","Blankets","Table Linen"],
+   Storage:["Boxes","Baskets","Shelving","Organisers"]
+  }
+ },
+ Electronics:{
+  icon:"▣",children:{
+   Phones:["iPhone","Samsung","Google","Other Phones","Phone Cases"],
+   Computers:["Laptops","Desktops","Tablets","Monitors","Keyboards","Mice"],
+   Cameras:["Digital Cameras","Film Cameras","Lenses","Camera Accessories"],
+   Audio:["Headphones","Speakers","Turntables","Amplifiers","Microphones"],
+   Gaming:["Consoles","Games","Controllers","Gaming Accessories"],
+   Accessories:["Chargers","Cables","Adapters","Smart Devices"]
+  }
+ },
+ Collectibles:{
+  icon:"✦",children:{
+   Antiques:["Furniture","Ceramics","Glass","Silver","Bronze","Decorative Arts"],
+   Art:["Paintings","Prints","Sculpture","Photography","Posters"],
+   Vintage:["Vintage Fashion","Vintage Home","Vintage Accessories"],
+   Books:["Rare Books","Art Books","First Editions","Magazines"],
+   Coins:["Coins","Banknotes","Medals"],
+   Memorabilia:["Music","Film","Sports","Historical"]
+  }
+ },
+ Sports:{
+  icon:"◈",children:{
+   "Sports Clothing":["Jerseys","Shorts","Tracksuits","Activewear"],
+   Footwear:["Running","Football","Basketball","Tennis","Hiking"],
+   Equipment:["Fitness","Football","Tennis","Cycling","Outdoor"]
+  }
+ },
+ "Beauty & Wellness":{
+  icon:"✿",children:{
+   Makeup:["Face","Eyes","Lips","Brushes"],
+   Skincare:["Face Care","Body Care","Sun Care"],
+   Haircare:["Hair Products","Styling Tools"],
+   Fragrance:["Perfume","Cologne","Body Mist"]
+  }
+ },
+ "Pet Supplies":{
+  icon:"♡",children:{
+   Dogs:["Clothing","Beds","Accessories","Toys"],
+   Cats:["Beds","Accessories","Toys"],
+   Other:["Small Pets","Birds","Aquarium"]
+  }
+ }
+};
 
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function iconClass(cat){return {Bags:'bag',Shoes:'shoes',Home:'home',Tech:'tech'}[cat]||''}
-function toast(s){const t=document.getElementById('toast');t.textContent=s;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2500)}
-function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
-function openModal(id){document.getElementById(id).classList.add('show');document.body.style.overflow='hidden'}
-function closeModal(id){document.getElementById(id).classList.remove('show');document.body.style.overflow=''}
-function outsideClose(e,id){if(e.target.id===id)closeModal(id)}
+let selectedCategory="";
+let selectedBrand="";
 
-function renderCats(){document.getElementById('categories').innerHTML=cats.map(c=>`<button class="chip ${activeCat===c?'active':''}" onclick="setCat('${c}')">${c}</button>`).join('')}
+/* =========================
+   LARGE BRAND CATALOG
+   ========================= */
 
-function card(x){
-const fav=favorites.has(x.id);
-return `<article class="card"><button class="heart ${fav?'on':''}" onclick="toggleFav('${x.id}',event)">${fav?'♥':'♡'}</button><button style="all:unset;display:block;width:100%;cursor:pointer" onclick="openDetail('${x.id}')"><div class="photo ${iconClass(x.cat)}">${x.image_url?`<img src="${esc(x.image_url)}">`:(x.emoji||'✦')}</div><div class="cardBody"><div class="titleRow"><div class="title">${esc(x.title)}</div><span class="tag">${esc(x.cat)}</span></div><div class="meta">${esc(x.condition||'Good')} · MYFYNDA seller</div><div class="price">€${Number(x.price||0).toFixed(0)}</div></div></button></article>`
+const BRANDS=`
+Nike|Adidas|Puma|Reebok|New Balance|Converse|Vans|Asics|Under Armour|Jordan|Fila|Champion|Lacoste|Levi's|Lee|Wrangler|Diesel|G-Star RAW|Carhartt|The North Face|Patagonia|Columbia|Timberland|Dr. Martens|Birkenstock|UGG|Clarks|Skechers|Salomon|On|Hoka|Saucony
+Gucci|Prada|Chanel|Louis Vuitton|Dior|Hermès|Burberry|Balenciaga|Saint Laurent|Givenchy|Valentino|Versace|Fendi|Bottega Veneta|Celine|Loewe|Miu Miu|Chloé|Alexander McQueen|Maison Margiela|Jacquemus|Lanvin|Balmain|Moncler|Brunello Cucinelli|Loro Piana|Tom Ford|Armani|Dolce & Gabbana|Moschino|Etro|Marni|Jil Sander|Alaïa|Oscar de la Renta|Carolina Herrera|Elie Saab|Zuhair Murad
+Zara|H&M|COS|Massimo Dutti|Mango|Pull&Bear|Bershka|Stradivarius|Oysho|Arket|Weekday|& Other Stories|Uniqlo|GU|Muji|Gap|Old Navy|Banana Republic|Abercrombie & Fitch|American Eagle|Urban Outfitters|Free People|Anthropologie|Forever 21|Topshop|Next|Marks & Spencer|River Island|New Look|Primark
+Ralph Lauren|Polo Ralph Lauren|Tommy Hilfiger|Calvin Klein|Michael Kors|Coach|Kate Spade|Tory Burch|Marc Jacobs|DKNY|Guess|Hugo Boss|Hugo|Boss|Diesel|Gant|Lacoste|Fred Perry|Superdry|Paul Smith|Ted Baker|Reiss|AllSaints|Sandro|Maje|Claudie Pierlot|Sézane|Ba&sh|Faithfull the Brand
+Rolex|Omega|Cartier|Tiffany & Co.|Bulgari|Bvlgari|Chopard|Patek Philippe|Audemars Piguet|Vacheron Constantin|Breitling|Tag Heuer|Longines|Tissot|Seiko|Citizen|Casio|G-Shock|Swatch|Hamilton|Rado|Ray-Ban|Oakley|Persol
+Apple|Samsung|Google|Sony|LG|Panasonic|Canon|Nikon|Fujifilm|Leica|Olympus|Bose|JBL|Sennheiser|Marshall|Bang & Olufsen|Beats|Dyson|Philips|Nintendo|PlayStation|Xbox|Logitech|GoPro
+IKEA|West Elm|CB2|Crate & Barrel|Pottery Barn|Anthropologie Home|Zara Home|H&M Home|Maisons du Monde|Habitat|Kartell|Vitra|Herman Miller|Knoll|Flos|Artemide|Louis Poulsen|Ferm Living|Hay|Alessi|Rosenthal|Villeroy & Boch|Wedgwood|Waterford|Baccarat|Christofle|Meissen|Royal Copenhagen|Herend|Lladró
+Estée Lauder|Clinique|MAC|M·A·C|NARS|Charlotte Tilbury|Dior Beauty|Chanel Beauty|Guerlain|Lancôme|YSL Beauty|Tom Ford Beauty|Rare Beauty|Fenty Beauty|Glossier|The Ordinary|La Mer|Kiehl's|Aesop|Jo Malone|Le Labo|Diptyque|Byredo|Maison Francis Kurkdjian|Creed|Acqua di Parma
+Disney|LEGO|Mattel|Barbie|Hot Wheels|Fisher-Price|Hasbro|Playmobil|Schleich|Sylvanian Families|Pokémon|Nintendo|Funko|Squishmallows
+`;
+
+const BRAND_LIST=[...new Set(BRANDS.split("|").map(x=>x.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+
+/* =========================
+   UI
+   ========================= */
+
+function renderCategories(){
+ const box=document.getElementById("categories");
+ box.innerHTML="";
+ Object.entries(CATEGORIES).forEach(([name,data])=>{
+   const b=document.createElement("button");
+   b.className="cat";
+   b.innerHTML=`<div class="icon">${data.icon}</div><strong>${name}</strong><small>${Object.keys(data.children).length} sections</small>`;
+   b.onclick=()=>openCategory(name);
+   box.appendChild(b);
+ });
 }
 
-function render(){
-const q=(document.getElementById('search').value||'').trim().toLowerCase();
-const data=listings.filter(x=>(activeCat==='All'||x.cat===activeCat)&&(!q||(x.title+' '+x.cat+' '+(x.desc||'')).toLowerCase().includes(q)));
-document.getElementById('resultCount').textContent=`${data.length} ${data.length===1?'find':'finds'} available`;
-document.getElementById('productGrid').innerHTML=data.length?data.map(card).join(''):`<div class="empty">No finds match your search.</div>`;
-renderCats()
+function openCategory(name){
+ const data=CATEGORIES[name];
+ document.getElementById("catTitle").textContent=name;
+ const content=document.getElementById("categoryContent");
+ content.innerHTML=`
+  <div class="category-path">
+   <button onclick="closeModal('categoryModal')">Home</button> / ${name}
+  </div>
+  <div class="category-list" id="subcats"></div>`;
+ const sub=document.getElementById("subcats");
+ Object.entries(data.children).forEach(([subname,items])=>{
+   const row=document.createElement("button");
+   row.className="category-row";
+   row.innerHTML=`<span><strong>${subname}</strong><br><small class="muted">${items.length} options</small></span><span>›</span>`;
+   row.onclick=()=>openSubCategory(name,subname,items);
+   sub.appendChild(row);
+ });
+ document.getElementById("categoryModal").classList.add("show");
 }
 
-function setCat(c){activeCat=c;render();scrollToId('explore')}
-function clearFilters(){activeCat='All';document.getElementById('search').value='';render()}
-
-async function loadListings(){
-const {data,error}=await supabaseClient.from('listings').select('id,title,description,price,category,condition,photos,status,created_at').eq('status','active').order('created_at',{ascending:false});
-if(error){console.error(error);listings=seed;toast('Could not load listings.')}
-else{
-listings=(data||[]).map(x=>({...x,cat:x.category,desc:x.description,image_url:Array.isArray(x.photos)&&x.photos.length?x.photos[0]:'',emoji:{Fashion:'🧥',Home:'🪑',Tech:'📷',Shoes:'👟',Bags:'👜',Kids:'🧸',Vintage:'🏺',Collectibles:'⌚'}[x.category]||'✦'}));
-if(!listings.length)listings=seed
-}
-render()
-}
-
-async function loadFavorites(){favorites=new Set(JSON.parse(localStorage.getItem('myfynda_favs')||'[]'))}
-
-async function toggleFav(id,e){
-e.stopPropagation();
-let a=[...favorites];
-if(a.includes(id)){a=a.filter(x=>x!==id);toast('Removed from Favorites')}
-else{a.push(id);toast('Saved to Favorites')}
-favorites=new Set(a);
-localStorage.setItem('myfynda_favs',JSON.stringify(a));
-render()
+function openSubCategory(parent,sub,items){
+ const content=document.getElementById("categoryContent");
+ content.innerHTML=`
+  <div class="category-path">
+   <button onclick="openCategory('${escapeAttr(parent)}')">${parent}</button> /
+   ${sub}
+  </div>
+  <div class="category-list" id="thirdcats"></div>`;
+ const box=document.getElementById("thirdcats");
+ items.forEach(item=>{
+  const row=document.createElement("button");
+  row.className="category-row";
+  row.innerHTML=`<span>${item}</span><span>›</span>`;
+  row.onclick=()=>{
+   selectedCategory=`${parent} › ${sub} › ${item}`;
+   document.getElementById("fCategory").value=selectedCategory;
+   closeModal("categoryModal");
+   closeModal("pickerModal");
+  };
+  box.appendChild(row);
+ });
 }
 
-function showFavorites(){
-const data=listings.filter(x=>favorites.has(x.id));
-document.getElementById('search').value='';
-document.getElementById('resultCount').textContent=`${data.length} saved finds`;
-document.getElementById('productGrid').innerHTML=data.length?data.map(card).join(''):`<div class="empty">You have no saved finds yet.</div>`;
-scrollToId('explore')
+function openCategoryPicker(){
+ document.getElementById("pickerContent").innerHTML="";
+ Object.entries(CATEGORIES).forEach(([name,data])=>{
+  const row=document.createElement("button");
+  row.className="category-row";
+  row.innerHTML=`<span>${data.icon} &nbsp; ${name}</span><span>›</span>`;
+  row.onclick=()=>openPickerSub(name);
+  document.getElementById("pickerContent").appendChild(row);
+ });
+ document.getElementById("pickerModal").classList.add("show");
 }
 
-function openDetail(id){
-const x=listings.find(a=>String(a.id)===String(id));if(!x)return;
-document.getElementById('dTitle').textContent=x.title;
-document.getElementById('detailBody').innerHTML=`${x.image_url?`<img src="${esc(x.image_url)}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:18px;margin-bottom:18px">`:`<div class="photo ${iconClass(x.cat)}" style="border-radius:18px;margin-bottom:18px">${x.emoji||'✦'}</div>`}<div class="titleRow"><div><div class="muted">${esc(x.cat)} · ${esc(x.condition||'Good')}</div><h3 style="font-size:28px;margin:8px 0">${esc(x.title)}</h3></div><div class="price">€${Number(x.price||0).toFixed(0)}</div></div><p style="color:#c9c9c9;line-height:1.6">${esc(x.desc||'No description yet.')}</p><div class="modalActions"><button class="pill" onclick="toggleFav('${x.id}',event)">♡ Favorite</button><button class="pill lime" onclick="toast('Checkout will be connected after payment setup.')">Buy / Make an offer</button></div>`;
-openModal('detailOverlay')
+function openPickerSub(name){
+ const data=CATEGORIES[name];
+ const box=document.getElementById("pickerContent");
+ box.innerHTML=`<div class="category-path"><button onclick="openCategoryPicker()">‹ Back</button> / ${name}</div>`;
+ Object.entries(data.children).forEach(([sub,items])=>{
+  const row=document.createElement("button");
+  row.className="category-row";
+  row.innerHTML=`<span>${sub}</span><span>›</span>`;
+  row.onclick=()=>{
+   selectedCategory=`${name} › ${sub}`;
+   document.getElementById("fCategory").value=selectedCategory;
+   closeModal("pickerModal");
+  };
+  box.appendChild(row);
+ });
 }
+
+function searchBrands(q){
+ const box=document.getElementById("brandResults");
+ const term=(q||"").toLowerCase().trim();
+ const arr=term?BRAND_LIST.filter(b=>b.toLowerCase().includes(term)):BRAND_LIST.slice(0,80);
+ box.innerHTML="";
+ arr.slice(0,80).forEach(brand=>{
+  const div=document.createElement("div");
+  div.className="brand-item";
+  div.textContent=brand;
+  div.onclick=()=>{
+   selectedBrand=brand;
+   document.getElementById("brandInput").value=brand;
+   box.style.display="none";
+  };
+  box.appendChild(div);
+ });
+ box.style.display="block";
+}
+
+document.addEventListener("click",e=>{
+ if(!e.target.closest(".brand-wrap"))document.getElementById("brandResults").style.display="none";
+});
+
+function escapeAttr(x){return String(x).replace(/'/g,"\\'")}
 
 function openSell(){
-if(!currentUser){authMode='signin';updateAuthUI();openModal('authOverlay');toast('Sign in first to sell an item.');return}
-openModal('sellOverlay')
+ document.getElementById("sellModal").classList.add("show");
 }
 
-function updateAuthUI(){
-document.getElementById('authTitle').textContent=authMode==='signin'?'Sign in to MYFYNDA':'Create your MYFYNDA account';
-document.getElementById('nameField').style.display=authMode==='signin'?'none':'block';
-document.getElementById('authSubmit').textContent=authMode==='signin'?'Sign in':'Create account';
-document.getElementById('authSwitch').textContent=authMode==='signin'?'Create account':'I already have an account';
-document.getElementById('authMsg').textContent=''
+function openAuth(){
+ document.getElementById("authModal").classList.add("show");
 }
 
-function openAccount(){
-if(currentUser){toast(currentUser.email+' · Signed in');return}
-authMode='signin';updateAuthUI();openModal('authOverlay')
+function closeModal(id){
+ document.getElementById(id).classList.remove("show");
 }
 
-function switchAuth(){authMode=authMode==='signin'?'signup':'signin';updateAuthUI()}
+/* =========================
+   PHOTO PREVIEW
+   ========================= */
 
-async function submitAuth(){
-const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value,name=document.getElementById('authName').value.trim(),msg=document.getElementById('authMsg'),btn=document.getElementById('authSubmit');
-if(!email||!password){msg.textContent='Enter email and password.';return}
-if(authMode==='signup'&&password.length<6){msg.textContent='Password must be at least 6 characters.';return}
-btn.disabled=true;
-try{
-if(authMode==='signup'){
-const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{display_name:name}}});
-if(error)throw error;
-if(data.user&&name){await supabaseClient.from('profiles').upsert({id:data.user.id,display_name:name},{onConflict:'id'})}
-if(data.session){toast('Account created');closeModal('authOverlay');await refreshAuth()}
-else msg.textContent='Account created. Check your email to confirm.'
-}else{
-const {error}=await supabaseClient.auth.signInWithPassword({email,password});
-if(error)throw error;
-closeModal('authOverlay');toast('Signed in');await refreshAuth()
-}
-}catch(e){msg.textContent=e.message||'Something went wrong.'}
-finally{btn.disabled=false}
-}
+document.getElementById("photos").addEventListener("change",e=>{
+ const box=document.getElementById("preview");
+ box.innerHTML="";
+ [...e.target.files].slice(0,8).forEach(file=>{
+  const img=document.createElement("img");
+  img.src=URL.createObjectURL(file);
+  box.appendChild(img);
+ });
+});
 
-async function refreshAuth(){
-const {data}=await supabaseClient.auth.getUser();
-currentUser=data.user||null;
-document.getElementById('accountBtn').textContent=currentUser?'My account':'Sign in';
-await loadFavorites()
+/* =========================
+   AUTH
+   ========================= */
+
+async function signUp(){
+ const email=document.getElementById("authEmail").value.trim();
+ const password=document.getElementById("authPassword").value;
+ if(!email||!password)return status("Enter email and password.");
+ const {error}=await sb.auth.signUp({email,password});
+ document.getElementById("authStatus").textContent=error?error.message:"Account created. Check your email if confirmation is required.";
 }
 
-supabaseClient.auth.onAuthStateChange(()=>setTimeout(refreshAuth,0));
-
-async function previewFiles(){
-const files=[...document.getElementById('sellPhotos').files].slice(0,8),box=document.getElementById('photoPreview');
-box.innerHTML='';
-files.forEach(file=>{const img=document.createElement('img');img.src=URL.createObjectURL(file);img.style.width='100%';img.style.aspectRatio='1';img.style.objectFit='cover';img.style.borderRadius='10px';box.appendChild(img)})
+async function signIn(){
+ const email=document.getElementById("authEmail").value.trim();
+ const password=document.getElementById("authPassword").value;
+ const {error}=await sb.auth.signInWithPassword({email,password});
+ if(error)status(error.message);
+ else{
+  status("Signed in successfully.");
+  setTimeout(()=>closeModal("authModal"),700);
+ }
 }
+
+function status(x){document.getElementById("authStatus").textContent=x}
+
+/* =========================
+   PUBLISH
+   ========================= */
 
 async function publishListing(){
-if(!currentUser){toast('Please sign in first.');return}
-const title=document.getElementById('sellTitle').value.trim();
-const price=Number(document.getElementById('sellPrice').value);
-const category=document.getElementById('sellCat').value;
-const condition=document.getElementById('sellCondition').value;
-const desc=document.getElementById('sellDesc').value.trim();
-const files=[...document.getElementById('sellPhotos').files].slice(0,8);
+ const {data:{user}}=await sb.auth.getUser();
+ if(!user){
+  alert("Please sign in first.");
+  openAuth();
+  return;
+ }
 
-if(!title||!price||!desc){toast('Complete title, price and description.');return}
+ const title=document.getElementById("fTitle").value.trim();
+ const category=document.getElementById("fCategory").value.trim();
+ const price=parseFloat(document.getElementById("fPrice").value);
+ const description=document.getElementById("fDescription").value.trim();
 
-const btn=document.querySelector('#sellOverlay .lime');
-btn.disabled=true;
+ if(!title||!category||Number.isNaN(price)||!description){
+  alert("Please complete Title, Category, Price and Description.");
+  return;
+ }
 
-try{
-const {data:listing,error}=await supabaseClient.from('listings').insert({
-seller_id:currentUser.id,
-title,
-description:desc,
-price,
-category,
-condition,
-status:'active',
-photos:[]
-}).select().single();
+ const files=[...document.getElementById("photos").files].slice(0,8);
+ const urls=[];
 
-if(error)throw error;
+ for(const file of files){
+  const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  const path=`${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}_${safe}`;
 
-const urls=[];
+  const {error}=await sb.storage.from("listing-photos").upload(path,file,{
+   cacheControl:"3600",upsert:false
+  });
 
-for(let i=0;i<files.length;i++){
-const file=files[i];
-const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-const path=`${currentUser.id}/${listing.id}/${Date.now()}_${i}_${safe}`;
-
-const {error:upErr}=await supabaseClient.storage.from('listing-photos').upload(path,file,{upsert:false});
-if(upErr)throw upErr;
-
-const {data:urlData}=supabaseClient.storage.from('listing-photos').getPublicUrl(path);
-urls.push(urlData.publicUrl)
-}
-
-if(urls.length){
-const {error:updateErr}=await supabaseClient.from('listings').update({photos:urls}).eq('id',listing.id).eq('seller_id',currentUser.id);
-if(updateErr)throw updateErr
-}
-
-closeModal('sellOverlay');
-document.getElementById('sellTitle').value='';
-document.getElementById('sellPrice').value='';
-document.getElementById('sellDesc').value='';
-document.getElementById('sellPhotos').value='';
-document.getElementById('photoPreview').innerHTML='';
-toast('Listing published successfully!');
-await loadListings()
-}catch(e){console.error(e);toast('Publish error: '+(e.message||e))}
-finally{btn.disabled=false}
-}
-
-function showMenu(){toast('Use Search, Favorites or Sell from the top navigation.')}
-
-document.getElementById('search').addEventListener('input',render);
-renderCats();
-updateAuthUI();
-
-(async()=>{await refreshAuth();await loadListings()})();
-/* MYFYNDA BRAND SYSTEM */
-(function(){
-  const brands = [
-    "Nike","Adidas","Puma","New Balance","Converse","Vans",
-    "Zara","H&M","Mango","Massimo Dutti","COS","Uniqlo","Arket",
-    "Levi's","Tommy Hilfiger","Calvin Klein","Ralph Lauren","Lacoste",
-    "Gucci","Prada","Louis Vuitton","Chanel","Dior","Saint Laurent",
-    "Balenciaga","Burberry","Fendi","Versace","Valentino","Moncler",
-    "The North Face","Patagonia","Coach","Michael Kors","Marc Jacobs",
-    "Jacquemus","Ganni","Dr. Martens","Loewe","Celine","Hermès",
-    "Bottega Veneta","Alexander McQueen","Givenchy","Chloé",
-    "Maison Margiela","Acne Studios","Diesel","Reformation"
-  ];
-
-  const cat = document.getElementById('sellCat');
-  if(cat && !document.getElementById('sellBrand')){
-    const field=document.createElement('div');
-    field.className='field';
-    field.innerHTML=`
-      <label>Brand</label>
-      <input id="sellBrand" list="myfyndaBrands"
-        placeholder="Search or enter brand">
-      <datalist id="myfyndaBrands">
-        ${brands.map(b=>`<option value="${b}"></option>`).join('')}
-      </datalist>
-    `;
-    cat.closest('.field').after(field);
+  if(error){
+   alert("Photo upload error: "+error.message);
+   return;
   }
 
-  const oldPublish=window.publishListing;
+  const {data}=sb.storage.from("listing-photos").getPublicUrl(path);
+  urls.push(data.publicUrl);
+ }
 
-  window.publishListing=async function(){
-    const brand=(document.getElementById('sellBrand')?.value||'').trim();
+ const payload={
+  seller_id:user.id,
+  title,
+  category,
+  price,
+  condition:document.getElementById("fCondition").value||null,
+  size:document.getElementById("fSize").value.trim()||null,
+  brand:selectedBrand||document.getElementById("brandInput").value.trim()||null,
+  color:document.getElementById("fColor").value.trim()||null,
+  material:document.getElementById("fMaterial").value.trim()||null,
+  measurements:document.getElementById("fMeasurements").value.trim()||null,
+  origin:document.getElementById("fOrigin").value.trim()||null,
+  description,
+  photos:urls,
+  status:"active"
+ };
 
-    if(!brand){
-      toast('Please enter the brand.');
-      return;
-    }
+ const {error}=await sb.from("listings").insert(payload);
 
-    if(!currentUser){
-      toast('Please sign in first.');
-      return;
-    }
+ if(error){
+  alert("Publish error: "+error.message);
+  console.error(error);
+  return;
+ }
 
-    const title=document.getElementById('sellTitle').value.trim();
-    const price=Number(document.getElementById('sellPrice').value);
-    const category=document.getElementById('sellCat').value;
-    const condition=document.getElementById('sellCondition').value;
-    const desc=document.getElementById('sellDesc').value.trim();
-    const files=[...document.getElementById('sellPhotos').files].slice(0,8);
+ alert("Your FYND has been published! 💚");
+ closeModal("sellModal");
+ clearSell();
+ loadListings();
+}
 
-    if(!title||!price||!desc){
-      toast('Complete title, price and description.');
-      return;
-    }
+function clearSell(){
+ ["fTitle","fCategory","fPrice","fSize","brandInput","fColor","fMaterial","fMeasurements","fOrigin","fDescription"].forEach(id=>{
+  document.getElementById(id).value="";
+ });
+ document.getElementById("photos").value="";
+ document.getElementById("preview").innerHTML="";
+ selectedBrand="";
+ selectedCategory="";
+}
 
-    const btn=document.querySelector('#sellOverlay .lime');
-    btn.disabled=true;
+/* =========================
+   LISTINGS
+   ========================= */
 
-    try{
-      const {data:listing,error}=await supabaseClient
-        .from('listings')
-        .insert({
-          seller_id:currentUser.id,
-          title,
-          description:desc,
-          price,
-          category,
-          condition,
-          brand,
-          status:'active',
-          photos:[]
-        })
-        .select()
-        .single();
+async function loadListings(search=""){
+ let query=sb.from("listings")
+  .select("*")
+  .eq("status","active")
+  .order("created_at",{ascending:false})
+  .limit(40);
 
-      if(error) throw error;
+ const {data,error}=await query;
 
-      const urls=[];
+ if(error){
+  console.error(error);
+  document.getElementById("listings").innerHTML=
+   `<div class="empty">Could not load FYNDs.<br><small>${error.message}</small></div>`;
+  return;
+ }
 
-      for(let i=0;i<files.length;i++){
-        const file=files[i];
-        const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-        const path=`${currentUser.id}/${listing.id}/${Date.now()}_${i}_${safe}`;
+ let rows=data||[];
 
-        const {error:upErr}=await supabaseClient
-          .storage.from('listing-photos')
-          .upload(path,file,{upsert:false});
+ if(search){
+  const s=search.toLowerCase();
+  rows=rows.filter(x=>
+   [x.title,x.brand,x.category,x.description,x.origin]
+   .filter(Boolean).join(" ").toLowerCase().includes(s)
+  );
+ }
 
-        if(upErr) throw upErr;
+ document.getElementById("count").textContent=`${rows.length} FYNDs`;
 
-        const {data:urlData}=supabaseClient
-          .storage.from('listing-photos')
-          .getPublicUrl(path);
+ const box=document.getElementById("listings");
 
-        urls.push(urlData.publicUrl);
-      }
+ if(!rows.length){
+  box.innerHTML=`<div class="empty">No FYNDs found yet.</div>`;
+  return;
+ }
 
-      if(urls.length){
-        const {error:updateErr}=await supabaseClient
-          .from('listings')
-          .update({photos:urls})
-          .eq('id',listing.id)
-          .eq('seller_id',currentUser.id);
+ box.innerHTML=rows.map(item=>{
+  const photos=Array.isArray(item.photos)?item.photos:[];
+  const img=photos[0]||"";
+  return `
+   <article class="card">
+    ${img?`<img src="${img}" alt="">`:`<div style="aspect-ratio:1;background:#191b20;display:grid;place-items:center;color:#666">MYFYNDA</div>`}
+    <div class="card-body">
+     <div class="price">€${Number(item.price||0).toFixed(2)}</div>
+     <strong>${escapeHtml(item.title)}</strong>
+     <div class="muted">${escapeHtml(item.brand||"Unbranded")}</div>
+     <div class="muted">${escapeHtml(item.category||"")}</div>
+    </div>
+   </article>`;
+ }).join("");
+}
 
-        if(updateErr) throw updateErr;
-      }
+function escapeHtml(x){
+ return String(x).replace(/[&<>"']/g,m=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+ }[m]));
+}
 
-      closeModal('sellOverlay');
+function showAll(){
+ document.getElementById("mainSearch").value="";
+ loadListings();
+}
 
-      document.getElementById('sellTitle').value='';
-      document.getElementById('sellPrice').value='';
-      document.getElementById('sellDesc').value='';
-      document.getElementById('sellPhotos').value='';
-      document.getElementById('sellBrand').value='';
-      document.getElementById('photoPreview').innerHTML='';
+document.getElementById("mainSearch").addEventListener("input",e=>{
+ loadListings(e.target.value);
+});
 
-      toast('Listing published successfully!');
-      await loadListings();
+/* =========================
+   START
+   ========================= */
 
-    }catch(e){
-      console.error(e);
-      toast('Publish error: '+(e.message||e));
-    }finally{
-      btn.disabled=false;
-    }
-  };
-})();
+renderCategories();
+loadListings();
+
+sb.auth.onAuthStateChange((_event,session)=>{
+ console.log("MYFYNDA auth:",!!session);
+});
 </script>
 </body>
 </html>
