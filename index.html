@@ -268,6 +268,134 @@ renderCats();
 updateAuthUI();
 
 (async()=>{await refreshAuth();await loadListings()})();
+/* MYFYNDA BRAND SYSTEM */
+(function(){
+  const brands = [
+    "Nike","Adidas","Puma","New Balance","Converse","Vans",
+    "Zara","H&M","Mango","Massimo Dutti","COS","Uniqlo","Arket",
+    "Levi's","Tommy Hilfiger","Calvin Klein","Ralph Lauren","Lacoste",
+    "Gucci","Prada","Louis Vuitton","Chanel","Dior","Saint Laurent",
+    "Balenciaga","Burberry","Fendi","Versace","Valentino","Moncler",
+    "The North Face","Patagonia","Coach","Michael Kors","Marc Jacobs",
+    "Jacquemus","Ganni","Dr. Martens","Loewe","Celine","Hermès",
+    "Bottega Veneta","Alexander McQueen","Givenchy","Chloé",
+    "Maison Margiela","Acne Studios","Diesel","Reformation"
+  ];
+
+  const cat = document.getElementById('sellCat');
+  if(cat && !document.getElementById('sellBrand')){
+    const field=document.createElement('div');
+    field.className='field';
+    field.innerHTML=`
+      <label>Brand</label>
+      <input id="sellBrand" list="myfyndaBrands"
+        placeholder="Search or enter brand">
+      <datalist id="myfyndaBrands">
+        ${brands.map(b=>`<option value="${b}"></option>`).join('')}
+      </datalist>
+    `;
+    cat.closest('.field').after(field);
+  }
+
+  const oldPublish=window.publishListing;
+
+  window.publishListing=async function(){
+    const brand=(document.getElementById('sellBrand')?.value||'').trim();
+
+    if(!brand){
+      toast('Please enter the brand.');
+      return;
+    }
+
+    if(!currentUser){
+      toast('Please sign in first.');
+      return;
+    }
+
+    const title=document.getElementById('sellTitle').value.trim();
+    const price=Number(document.getElementById('sellPrice').value);
+    const category=document.getElementById('sellCat').value;
+    const condition=document.getElementById('sellCondition').value;
+    const desc=document.getElementById('sellDesc').value.trim();
+    const files=[...document.getElementById('sellPhotos').files].slice(0,8);
+
+    if(!title||!price||!desc){
+      toast('Complete title, price and description.');
+      return;
+    }
+
+    const btn=document.querySelector('#sellOverlay .lime');
+    btn.disabled=true;
+
+    try{
+      const {data:listing,error}=await supabaseClient
+        .from('listings')
+        .insert({
+          seller_id:currentUser.id,
+          title,
+          description:desc,
+          price,
+          category,
+          condition,
+          brand,
+          status:'active',
+          photos:[]
+        })
+        .select()
+        .single();
+
+      if(error) throw error;
+
+      const urls=[];
+
+      for(let i=0;i<files.length;i++){
+        const file=files[i];
+        const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+        const path=`${currentUser.id}/${listing.id}/${Date.now()}_${i}_${safe}`;
+
+        const {error:upErr}=await supabaseClient
+          .storage.from('listing-photos')
+          .upload(path,file,{upsert:false});
+
+        if(upErr) throw upErr;
+
+        const {data:urlData}=supabaseClient
+          .storage.from('listing-photos')
+          .getPublicUrl(path);
+
+        urls.push(urlData.publicUrl);
+      }
+
+      if(urls.length){
+        const {error:updateErr}=await supabaseClient
+          .from('listings')
+          .update({photos:urls})
+          .eq('id',listing.id)
+          .eq('seller_id',currentUser.id);
+
+        if(updateErr) throw updateErr;
+      }
+
+      closeModal('sellOverlay');
+
+      document.getElementById('sellTitle').value='';
+      document.getElementById('sellPrice').value='';
+      document.getElementById('sellDesc').value='';
+      document.getElementById('sellPhotos').value='';
+      document.getElementById('sellBrand').value='';
+      document.getElementById('photoPreview').innerHTML='';
+
+      toast('Listing published successfully!');
+      await loadListings();
+
+    }catch(e){
+      console.error(e);
+      toast('Publish error: '+(e.message||e));
+    }finally{
+      btn.disabled=false;
+    }
+  };
+})();
 </script>
 </body>
 </html>
