@@ -2,719 +2,673 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MYFYNDA — Find it. Love it. Make it yours.</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 :root{
-  --bg:#08090b;--panel:#111318;--panel2:#17191f;--lime:#c8ff35;
-  --pink:#ff8fcf;--text:#f6f7f9;--muted:#9297a3;--line:#272a31;
+  --ivory:#f5f1e8;
+  --black:#080808;
+  --lime:#c8ff00;
+  --pink:#ff63c7;
+  --gray:#77736b;
+  --white:#fff;
 }
+
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-.top{
-  position:sticky;top:0;z-index:20;background:rgba(8,9,11,.94);
-  backdrop-filter:blur(18px);border-bottom:1px solid var(--line)
+
+body{
+  margin:0;
+  background:var(--ivory);
+  color:var(--black);
+  font-family:Arial,Helvetica,sans-serif;
 }
-.nav{max-width:1200px;margin:auto;padding:16px 20px;display:flex;align-items:center;gap:18px}
-.logo{font-size:27px;font-weight:950;letter-spacing:-1.5px}
+
+a{
+  color:inherit;
+  text-decoration:none;
+}
+
+.topbar{
+  background:var(--black);
+  color:#fff;
+  text-align:center;
+  padding:9px;
+  font-size:10px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+
+header{
+  background:var(--black);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:28px;
+  padding:18px 4vw;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.logo{
+  font-size:26px;
+  font-weight:900;
+  letter-spacing:-1.5px;
+}
+
 .logo span{color:var(--lime)}
-.search{flex:1;background:#17191e;border:1px solid #30333a;border-radius:14px;padding:12px 15px;color:white;outline:none}
-.nav button,.btn{
-  border:0;border-radius:13px;padding:11px 15px;background:var(--lime);color:#08090b;font-weight:800
+
+.search{
+  flex:1;
+  max-width:420px;
+  background:#171717;
+  border:1px solid #383838;
+  color:#aaa;
+  padding:12px 16px;
+  font-size:12px;
 }
-.ghost{background:#191b20!important;color:white!important;border:1px solid #30333a!important}
-.hero{max-width:1200px;margin:auto;padding:45px 20px 25px}
-.hero h1{font-size:clamp(38px,7vw,76px);line-height:.95;margin:0;letter-spacing:-4px}
+
+.nav{
+  display:flex;
+  gap:20px;
+  font-size:11px;
+  font-weight:bold;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.actions{
+  display:flex;
+  gap:14px;
+  align-items:center;
+  font-size:11px;
+}
+
+.sell{
+  background:var(--lime);
+  color:#000;
+  padding:11px 19px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+.hero{
+  margin:22px 4vw 0;
+  min-height:590px;
+  position:relative;
+  overflow:hidden;
+  background:#222;
+}
+
+.hero:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.12)),
+    url("https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1800&q=85")
+    center/cover;
+}
+
+.hero-content{
+  position:relative;
+  color:white;
+  padding:90px 6vw;
+  max-width:720px;
+}
+
+.eyebrow{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  margin-bottom:20px;
+}
+
+.hero h1{
+  font-size:clamp(54px,7vw,100px);
+  line-height:.84;
+  letter-spacing:-.065em;
+  margin:0 0 28px;
+}
+
 .hero h1 span{color:var(--lime)}
-.hero p{color:var(--muted);font-size:17px;margin:18px 0 0}
-.wrap{max-width:1200px;margin:auto;padding:20px}
-.section-title{display:flex;justify-content:space-between;align-items:center;margin:25px 0 15px}
-.section-title h2{margin:0;font-size:22px}
-.categories{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.cat{
- background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:20px;
- min-height:110px;text-align:left;color:white;transition:.15s
+
+.hero p{
+  max-width:430px;
+  font-size:15px;
+  line-height:1.5;
+  color:#ddd;
 }
-.cat:hover{border-color:var(--lime);transform:translateY(-2px)}
-.cat .icon{font-size:27px}.cat strong{display:block;margin-top:12px}.cat small{color:var(--muted)}
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.card img{width:100%;aspect-ratio:1;object-fit:cover;background:#191b20}
-.card-body{padding:12px}.price{font-weight:900;color:var(--lime);font-size:18px}.muted{color:var(--muted);font-size:13px}
-.empty{padding:50px 20px;text-align:center;color:var(--muted)}
-.modal-bg{
- display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;
- align-items:center;justify-content:center;padding:15px
+
+.button{
+  display:inline-block;
+  background:var(--lime);
+  color:#000;
+  padding:15px 22px;
+  margin-top:14px;
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.08em;
 }
-.modal-bg.show{display:flex}
-.modal{
- background:#101216;border:1px solid #30333a;border-radius:22px;width:min(720px,100%);
- max-height:92vh;overflow:auto;padding:22px
+
+section{
+  padding:70px 4vw;
 }
-.modal h2{margin-top:0}
-.close{float:right;background:#202329;color:white;border:0;border-radius:10px;padding:8px 11px}
-.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.full{grid-column:1/-1}
-label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}
-.field{
- width:100%;background:#181a20;border:1px solid #30333a;border-radius:12px;
- color:white;padding:12px;outline:none
+
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  margin-bottom:25px;
 }
-.field:focus{border-color:var(--lime)}
-textarea.field{min-height:110px;resize:vertical}
-.filebox{border:1px dashed #444851;border-radius:14px;padding:18px;text-align:center}
-.preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.preview img{width:75px;height:75px;border-radius:9px;object-fit:cover}
-.actions{display:flex;gap:10px;margin-top:18px}
-.actions button{flex:1}
-.category-path{
- display:flex;align-items:center;gap:8px;flex-wrap:wrap;
- color:var(--muted);margin-bottom:16px
+
+.section-head h2{
+  margin:0;
+  font-size:38px;
+  letter-spacing:-.05em;
 }
-.category-path button{background:none;border:0;color:var(--lime);padding:0}
-.category-list{display:grid;gap:8px}
-.category-row{
- display:flex;justify-content:space-between;align-items:center;
- padding:16px;border:1px solid var(--line);background:var(--panel);
- border-radius:13px;color:white
+
+.section-head a{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  text-decoration:underline;
 }
-.category-row:hover{border-color:var(--lime)}
-.brand-results{
- position:absolute;left:0;right:0;top:100%;background:#15171c;
- border:1px solid #363941;border-radius:12px;max-height:260px;overflow:auto;z-index:50
+
+.products{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
 }
-.brand-wrap{position:relative}
-.brand-item{padding:11px 13px;border-bottom:1px solid #25272d;cursor:pointer}
-.brand-item:hover{background:#22252c}
-.badge{display:inline-block;padding:4px 8px;border-radius:8px;background:#24272d;color:var(--pink);font-size:11px}
-.bottom{
- position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(10,11,14,.95);
- border-top:1px solid var(--line);display:none;padding:9px
+
+.product{
+  background:#ebe6dc;
 }
-.bottom-inner{display:flex;justify-content:space-around}
-.bottom button{background:none;border:0;color:#a8adb8;font-size:12px}
-.bottom .sell{color:var(--lime);font-weight:900}
+
+.product-image{
+  aspect-ratio:.82;
+  overflow:hidden;
+  position:relative;
+}
+
+.product-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.heart{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:#fff;
+  display:grid;
+  place-items:center;
+  font-size:18px;
+}
+
+.info{
+  padding:14px;
+}
+
+.brand{
+  color:var(--gray);
+  font-size:9px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+
+.name{
+  font-size:13px;
+  margin:7px 0;
+}
+
+.price{
+  font-size:13px;
+  font-weight:bold;
+}
+
+.categories{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+}
+
+.category{
+  height:310px;
+  position:relative;
+  overflow:hidden;
+  background:#222;
+}
+
+.category img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:.4s;
+}
+
+.category:hover img{
+  transform:scale(1.05);
+}
+
+.category-title{
+  position:absolute;
+  bottom:18px;
+  left:18px;
+  background:#fff;
+  padding:11px 14px;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+.feature{
+  display:grid;
+  grid-template-columns:1.25fr .75fr;
+  gap:14px;
+}
+
+.feature-card{
+  min-height:460px;
+  position:relative;
+  overflow:hidden;
+}
+
+.feature-card img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.feature-copy{
+  position:absolute;
+  left:30px;
+  bottom:30px;
+  color:white;
+}
+
+.feature-copy h3{
+  font-size:48px;
+  line-height:.9;
+  letter-spacing:-.06em;
+  margin:0 0 12px;
+}
+
+.sell-section{
+  background:var(--black);
+  color:#fff;
+  display:flex;
+  justify-content:space-between;
+  gap:40px;
+  align-items:center;
+}
+
+.sell-section h2{
+  font-size:55px;
+  line-height:.88;
+  letter-spacing:-.06em;
+  margin:0;
+}
+
+.sell-section p{
+  max-width:400px;
+  color:#bbb;
+  line-height:1.5;
+}
+
+footer{
+  background:var(--black);
+  color:#fff;
+  padding:55px 4vw 25px;
+}
+
+.footer-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:40px;
+}
+
+.footer-logo{
+  font-size:32px;
+  font-weight:900;
+}
+
+.footer-logo span{color:var(--lime)}
+
+footer h4{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.15em;
+}
+
+footer a,footer p{
+  color:#aaa;
+  font-size:11px;
+  margin:9px 0;
+  display:block;
+}
+
+.copy{
+  border-top:1px solid #333;
+  margin-top:45px;
+  padding-top:18px;
+  color:#777;
+  font-size:9px;
+}
+
 @media(max-width:800px){
- .nav{padding:12px}.nav .search{display:none}
- .categories{grid-template-columns:repeat(2,1fr)}
- .cards{grid-template-columns:repeat(2,1fr)}
- .hero{padding-top:30px}.form{grid-template-columns:1fr}
- .bottom{display:block}.wrap{padding-bottom:80px}
+
+  header{
+    padding:15px;
+    gap:12px;
+  }
+
+  .search{display:none}
+
+  .nav{display:none}
+
+  .actions{
+    margin-left:auto;
+  }
+
+  .hero{
+    margin:10px;
+    min-height:560px;
+  }
+
+  .hero-content{
+    padding:55px 28px;
+  }
+
+  .hero h1{
+    font-size:58px;
+  }
+
+  section{
+    padding:50px 15px;
+  }
+
+  .products{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .categories{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .category{
+    height:240px;
+  }
+
+  .category:last-child{
+    grid-column:span 2;
+  }
+
+  .feature{
+    grid-template-columns:1fr;
+  }
+
+  .sell-section{
+    display:block;
+  }
+
+  .sell-section h2{
+    font-size:45px;
+  }
+
+  .footer-grid{
+    grid-template-columns:1fr 1fr;
+  }
 }
 </style>
 </head>
+
 <body>
 
-<header class="top">
- <div class="nav">
-   <div class="logo">MY<span>FYNDA</span></div>
-   <input id="mainSearch" class="search" placeholder="Search finds, brands, categories...">
-   <button class="ghost" onclick="openAuth()">Account</button>
-   <button onclick="openSell()">＋ Sell</button>
- </div>
+<div class="topbar">
+Global fashion · vintage · design · collectibles · shop worldwide
+</div>
+
+<header>
+
+<div class="logo">MYFYNDA<span>.</span></div>
+
+<input class="search" placeholder="Search finds, brands, categories...">
+
+<nav class="nav">
+<a href="#">Women</a>
+<a href="#">Men</a>
+<a href="#">Kids</a>
+<a href="#">Home</a>
+<a href="#">Vintage</a>
+</nav>
+
+<div class="actions">
+<a href="#">♡</a>
+<a href="#">Bag</a>
+<a href="#">Account</a>
+<a class="sell" href="#">Sell</a>
+</div>
+
 </header>
 
-<section class="hero">
- <h1>FIND IT.<br><span>LOVE IT.</span><br>MAKE IT YOURS.</h1>
- <p>A marketplace for fashion, vintage, design, collectibles and everything worth finding.</p>
+<main>
+
+<div class="hero">
+<div class="hero-content">
+
+<div class="eyebrow">The global fashion marketplace</div>
+
+<h1>
+FIND IT.<br>
+<span>LOVE IT.</span><br>
+MAKE IT YOURS.
+</h1>
+
+<p>
+A marketplace for fashion, vintage, design, collectibles and everything worth finding.
+</p>
+
+<a class="button" href="#">Shop now</a>
+
+</div>
+</div>
+
+
+<section>
+
+<div class="section-head">
+<h2>New arrivals</h2>
+<a href="#">View all →</a>
+</div>
+
+<div class="products">
+
+<div class="product">
+<div class="product-image">
+<img src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=900&q=85">
+<div class="heart">♡</div>
+</div>
+<div class="info">
+<div class="brand">Vintage Edit</div>
+<div class="name">Structured Leather Jacket</div>
+<div class="price">€185</div>
+</div>
+</div>
+
+<div class="product">
+<div class="product-image">
+<img src="https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=900&q=85">
+<div class="heart">♡</div>
+</div>
+<div class="info">
+<div class="brand">Curated Seller</div>
+<div class="name">90s Shoulder Bag</div>
+<div class="price">€120</div>
+</div>
+</div>
+
+<div class="product">
+<div class="product-image">
+<img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=900&q=85">
+<div class="heart">♡</div>
+</div>
+<div class="info">
+<div class="brand">Archive Finds</div>
+<div class="name">Italian Leather Tote</div>
+<div class="price">€240</div>
+</div>
+</div>
+
+<div class="product">
+<div class="product-image">
+<img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=85">
+<div class="heart">♡</div>
+</div>
+<div class="info">
+<div class="brand">MYFYNDA Select</div>
+<div class="name">Statement Look</div>
+<div class="price">€310</div>
+</div>
+</div>
+
+</div>
 </section>
 
-<main class="wrap">
 
- <div class="section-title">
-   <h2>Explore categories</h2>
- </div>
- <div id="categories" class="categories"></div>
+<section>
 
- <div class="section-title">
-   <h2>Latest FYNDs</h2>
-   <span id="count" class="muted"></span>
- </div>
- <div id="listings" class="cards"></div>
+<div class="section-head">
+<h2>Shop by category</h2>
+<a href="#">Explore all →</a>
+</div>
+
+<div class="categories">
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=85">
+<div class="category-title">Women →</div>
+</div>
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=900&q=85">
+<div class="category-title">Men →</div>
+</div>
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=900&q=85">
+<div class="category-title">Kids →</div>
+</div>
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=85">
+<div class="category-title">Home →</div>
+</div>
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?auto=format&fit=crop&w=900&q=85">
+<div class="category-title">Vintage →</div>
+</div>
+
+</div>
+</section>
+
+
+<section>
+
+<div class="section-head">
+<h2>Curated finds</h2>
+<a href="#">Discover →</a>
+</div>
+
+<div class="feature">
+
+<div class="feature-card">
+<img src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?auto=format&fit=crop&w=1400&q=85">
+<div class="feature-copy">
+<div class="eyebrow">MYFYNDA EDIT</div>
+<h3>Objects<br>with a story.</h3>
+<a class="button" href="#">Shop vintage</a>
+</div>
+</div>
+
+<div class="feature-card">
+<img src="https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=1000&q=85">
+<div class="feature-copy">
+<div class="eyebrow">TRENDING NOW</div>
+<h3>Worth<br>finding.</h3>
+</div>
+</div>
+
+</div>
+</section>
+
+
+<section class="sell-section">
+
+<div>
+<div class="eyebrow">For sellers</div>
+<h2>HAVE SOMETHING<br>WORTH FINDING?</h2>
+</div>
+
+<div>
+<p>
+Turn your fashion, vintage pieces and collectibles into someone else's next discovery.
+</p>
+<a class="button" href="#">Sell on MYFYNDA</a>
+</div>
+
+</section>
 
 </main>
 
-<div class="modal-bg" id="categoryModal">
- <div class="modal">
-   <button class="close" onclick="closeModal('categoryModal')">✕</button>
-   <h2 id="catTitle">Categories</h2>
-   <div id="categoryContent"></div>
- </div>
+
+<footer>
+
+<div class="footer-grid">
+
+<div>
+<div class="footer-logo">MYFYNDA<span>.</span></div>
+<p>Find it. Love it. Make it yours.</p>
 </div>
 
-<div class="modal-bg" id="sellModal">
- <div class="modal">
-  <button class="close" onclick="closeModal('sellModal')">✕</button>
-  <h2>Sell your FYND</h2>
-
-  <div class="form">
-   <div class="full">
-    <label>Title</label>
-    <input id="fTitle" class="field" placeholder="What are you selling?">
-   </div>
-
-   <div>
-    <label>Category</label>
-    <input id="fCategory" class="field" readonly placeholder="Choose category" onclick="openCategoryPicker()">
-   </div>
-
-   <div>
-    <label>Price</label>
-    <input id="fPrice" class="field" type="number" min="0" step="0.01" placeholder="0.00">
-   </div>
-
-   <div>
-    <label>Condition</label>
-    <select id="fCondition" class="field">
-     <option value="">Select condition</option>
-     <option>New with tags</option>
-     <option>New without tags</option>
-     <option>Very good</option>
-     <option>Good</option>
-     <option>Satisfactory</option>
-     <option>Antique / collectible</option>
-    </select>
-   </div>
-
-   <div>
-    <label>Size</label>
-    <input id="fSize" class="field" placeholder="e.g. M / 38 / 10">
-   </div>
-
-   <div class="full brand-wrap">
-    <label>Brand</label>
-    <input id="brandInput" class="field" autocomplete="off"
-      placeholder="Search and choose a brand..."
-      oninput="searchBrands(this.value)"
-      onclick="searchBrands(this.value)">
-    <div id="brandResults" class="brand-results" style="display:none"></div>
-   </div>
-
-   <div>
-    <label>Colour</label>
-    <input id="fColor" class="field" placeholder="Black">
-   </div>
-
-   <div>
-    <label>Material</label>
-    <input id="fMaterial" class="field" placeholder="Leather, cotton...">
-   </div>
-
-   <div>
-    <label>Measurements</label>
-    <input id="fMeasurements" class="field" placeholder="Optional">
-   </div>
-
-   <div>
-    <label>Origin / Period</label>
-    <input id="fOrigin" class="field" placeholder="France, 1970s...">
-   </div>
-
-   <div class="full">
-    <label>Photos — up to 8</label>
-    <div class="filebox">
-      <input id="photos" type="file" accept="image/*" multiple>
-      <div id="preview" class="preview"></div>
-    </div>
-   </div>
-
-   <div class="full">
-    <label>Description</label>
-    <textarea id="fDescription" class="field" placeholder="Describe your item..."></textarea>
-   </div>
-  </div>
-
-  <div class="actions">
-   <button class="ghost btn" onclick="closeModal('sellModal')">Cancel</button>
-   <button class="btn" onclick="publishListing()">Publish FYND</button>
-  </div>
- </div>
+<div>
+<h4>Shop</h4>
+<a href="#">Women</a>
+<a href="#">Men</a>
+<a href="#">Kids</a>
+<a href="#">Home</a>
+<a href="#">Vintage</a>
 </div>
 
-<div class="modal-bg" id="authModal">
- <div class="modal">
-  <button class="close" onclick="closeModal('authModal')">✕</button>
-  <h2>MYFYNDA Account</h2>
-  <div class="form">
-   <div class="full">
-    <label>Email</label>
-    <input id="authEmail" class="field" type="email" placeholder="you@email.com">
-   </div>
-   <div class="full">
-    <label>Password</label>
-    <input id="authPassword" class="field" type="password" placeholder="Password">
-   </div>
-  </div>
-  <div class="actions">
-   <button class="ghost btn" onclick="signUp()">Create account</button>
-   <button class="btn" onclick="signIn()">Sign in</button>
-  </div>
-  <p id="authStatus" class="muted"></p>
- </div>
+<div>
+<h4>Sell</h4>
+<a href="#">Start selling</a>
+<a href="#">Seller guide</a>
+<a href="#">Fees</a>
+<a href="#">Payouts</a>
 </div>
 
-<div class="modal-bg" id="pickerModal">
- <div class="modal">
-  <button class="close" onclick="closeModal('pickerModal')">✕</button>
-  <h2>Choose category</h2>
-  <div id="pickerContent"></div>
- </div>
+<div>
+<h4>Help</h4>
+<a href="#">Shipping</a>
+<a href="#">Returns</a>
+<a href="#">Contact</a>
 </div>
 
-<nav class="bottom">
- <div class="bottom-inner">
-  <button onclick="window.scrollTo({top:0,behavior:'smooth'})">⌂<br>Home</button>
-  <button onclick="showAll()">⌕<br>Search</button>
-  <button class="sell" onclick="openSell()">＋<br>Sell</button>
-  <button onclick="openAuth()">♙<br>Account</button>
- </div>
-</nav>
+</div>
 
-<script>
-const SUPABASE_URL="https://yitylprqnzjjbhamujzt.supabase.co";
-const SUPABASE_KEY="sb_publishable_e7jx7UvFN7Dxfv59oZnh_g_Qb-QWYFr";
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+<div class="copy">
+© 2026 MYFYNDA · Terms · Privacy · Cookies
+</div>
 
-/* =========================
-   MYFYNDA CATEGORY SYSTEM
-   ========================= */
+</footer>
 
-const CATEGORIES={
- Women:{
-  icon:"♀",children:{
-   Clothing:["Dresses","Tops","Blouses","Shirts","T-Shirts","Sweaters","Hoodies","Jackets","Coats","Blazers","Jeans","Trousers","Skirts","Shorts","Activewear","Swimwear","Lingerie","Sleepwear"],
-   Shoes:["Sneakers","Boots","Ankle Boots","Heels","Flats","Sandals","Loafers","Slippers","Sports Shoes"],
-   Bags:["Handbags","Shoulder Bags","Crossbody Bags","Tote Bags","Clutches","Backpacks","Travel Bags","Wallets"],
-   Accessories:["Belts","Scarves","Hats","Gloves","Sunglasses","Hair Accessories"],
-   Jewellery:["Necklaces","Earrings","Bracelets","Rings","Brooches"],
-   Watches:["Wrist Watches","Smart Watches","Watch Accessories"],
-   Beauty:["Makeup","Skincare","Haircare","Perfume","Tools"]
-  }
- },
- Men:{
-  icon:"♂",children:{
-   Clothing:["T-Shirts","Shirts","Sweaters","Hoodies","Jackets","Coats","Suits","Blazers","Jeans","Trousers","Shorts","Activewear","Swimwear","Underwear"],
-   Shoes:["Sneakers","Boots","Loafers","Formal Shoes","Sandals","Sports Shoes"],
-   Bags:["Backpacks","Briefcases","Crossbody Bags","Travel Bags","Wallets"],
-   Accessories:["Belts","Ties","Scarves","Hats","Gloves","Sunglasses"],
-   Jewellery:["Necklaces","Bracelets","Rings","Cufflinks"],
-   Watches:["Wrist Watches","Smart Watches","Watch Accessories"]
-  }
- },
- Kids:{
-  icon:"♧",children:{
-   Girls:["Clothing","Shoes","Bags","Accessories","Jewellery"],
-   Boys:["Clothing","Shoes","Bags","Accessories"],
-   Baby:["Baby Clothing","Baby Shoes","Baby Accessories","Nursery"],
-   Toys:["Dolls","Building Toys","Collectible Toys","Educational Toys","Outdoor Toys","Games"],
-   "Kids Accessories":["School Bags","Hats","Sunglasses","Hair Accessories"]
-  }
- },
- Home:{
-  icon:"⌂",children:{
-   Furniture:["Chairs","Tables","Desks","Cabinets","Dressers","Sofas","Beds","Benches"],
-   "Home Decor":["Mirrors","Vases","Frames","Candles","Figurines","Clocks","Decorative Objects"],
-   Lighting:["Chandeliers","Pendant Lights","Table Lamps","Floor Lamps","Wall Lights"],
-   "Kitchen & Dining":["Dinnerware","Glassware","Cutlery","Serving","Cookware","Kitchen Tools"],
-   Textiles:["Rugs","Curtains","Cushions","Blankets","Table Linen"],
-   Storage:["Boxes","Baskets","Shelving","Organisers"]
-  }
- },
- Electronics:{
-  icon:"▣",children:{
-   Phones:["iPhone","Samsung","Google","Other Phones","Phone Cases"],
-   Computers:["Laptops","Desktops","Tablets","Monitors","Keyboards","Mice"],
-   Cameras:["Digital Cameras","Film Cameras","Lenses","Camera Accessories"],
-   Audio:["Headphones","Speakers","Turntables","Amplifiers","Microphones"],
-   Gaming:["Consoles","Games","Controllers","Gaming Accessories"],
-   Accessories:["Chargers","Cables","Adapters","Smart Devices"]
-  }
- },
- Collectibles:{
-  icon:"✦",children:{
-   Antiques:["Furniture","Ceramics","Glass","Silver","Bronze","Decorative Arts"],
-   Art:["Paintings","Prints","Sculpture","Photography","Posters"],
-   Vintage:["Vintage Fashion","Vintage Home","Vintage Accessories"],
-   Books:["Rare Books","Art Books","First Editions","Magazines"],
-   Coins:["Coins","Banknotes","Medals"],
-   Memorabilia:["Music","Film","Sports","Historical"]
-  }
- },
- Sports:{
-  icon:"◈",children:{
-   "Sports Clothing":["Jerseys","Shorts","Tracksuits","Activewear"],
-   Footwear:["Running","Football","Basketball","Tennis","Hiking"],
-   Equipment:["Fitness","Football","Tennis","Cycling","Outdoor"]
-  }
- },
- "Beauty & Wellness":{
-  icon:"✿",children:{
-   Makeup:["Face","Eyes","Lips","Brushes"],
-   Skincare:["Face Care","Body Care","Sun Care"],
-   Haircare:["Hair Products","Styling Tools"],
-   Fragrance:["Perfume","Cologne","Body Mist"]
-  }
- },
- "Pet Supplies":{
-  icon:"♡",children:{
-   Dogs:["Clothing","Beds","Accessories","Toys"],
-   Cats:["Beds","Accessories","Toys"],
-   Other:["Small Pets","Birds","Aquarium"]
-  }
- }
-};
-
-let selectedCategory="";
-let selectedBrand="";
-
-/* =========================
-   LARGE BRAND CATALOG
-   ========================= */
-
-const BRANDS=`
-Nike|Adidas|Puma|Reebok|New Balance|Converse|Vans|Asics|Under Armour|Jordan|Fila|Champion|Lacoste|Levi's|Lee|Wrangler|Diesel|G-Star RAW|Carhartt|The North Face|Patagonia|Columbia|Timberland|Dr. Martens|Birkenstock|UGG|Clarks|Skechers|Salomon|On|Hoka|Saucony
-Gucci|Prada|Chanel|Louis Vuitton|Dior|Hermès|Burberry|Balenciaga|Saint Laurent|Givenchy|Valentino|Versace|Fendi|Bottega Veneta|Celine|Loewe|Miu Miu|Chloé|Alexander McQueen|Maison Margiela|Jacquemus|Lanvin|Balmain|Moncler|Brunello Cucinelli|Loro Piana|Tom Ford|Armani|Dolce & Gabbana|Moschino|Etro|Marni|Jil Sander|Alaïa|Oscar de la Renta|Carolina Herrera|Elie Saab|Zuhair Murad
-Zara|H&M|COS|Massimo Dutti|Mango|Pull&Bear|Bershka|Stradivarius|Oysho|Arket|Weekday|& Other Stories|Uniqlo|GU|Muji|Gap|Old Navy|Banana Republic|Abercrombie & Fitch|American Eagle|Urban Outfitters|Free People|Anthropologie|Forever 21|Topshop|Next|Marks & Spencer|River Island|New Look|Primark
-Ralph Lauren|Polo Ralph Lauren|Tommy Hilfiger|Calvin Klein|Michael Kors|Coach|Kate Spade|Tory Burch|Marc Jacobs|DKNY|Guess|Hugo Boss|Hugo|Boss|Diesel|Gant|Lacoste|Fred Perry|Superdry|Paul Smith|Ted Baker|Reiss|AllSaints|Sandro|Maje|Claudie Pierlot|Sézane|Ba&sh|Faithfull the Brand
-Rolex|Omega|Cartier|Tiffany & Co.|Bulgari|Bvlgari|Chopard|Patek Philippe|Audemars Piguet|Vacheron Constantin|Breitling|Tag Heuer|Longines|Tissot|Seiko|Citizen|Casio|G-Shock|Swatch|Hamilton|Rado|Ray-Ban|Oakley|Persol
-Apple|Samsung|Google|Sony|LG|Panasonic|Canon|Nikon|Fujifilm|Leica|Olympus|Bose|JBL|Sennheiser|Marshall|Bang & Olufsen|Beats|Dyson|Philips|Nintendo|PlayStation|Xbox|Logitech|GoPro
-IKEA|West Elm|CB2|Crate & Barrel|Pottery Barn|Anthropologie Home|Zara Home|H&M Home|Maisons du Monde|Habitat|Kartell|Vitra|Herman Miller|Knoll|Flos|Artemide|Louis Poulsen|Ferm Living|Hay|Alessi|Rosenthal|Villeroy & Boch|Wedgwood|Waterford|Baccarat|Christofle|Meissen|Royal Copenhagen|Herend|Lladró
-Estée Lauder|Clinique|MAC|M·A·C|NARS|Charlotte Tilbury|Dior Beauty|Chanel Beauty|Guerlain|Lancôme|YSL Beauty|Tom Ford Beauty|Rare Beauty|Fenty Beauty|Glossier|The Ordinary|La Mer|Kiehl's|Aesop|Jo Malone|Le Labo|Diptyque|Byredo|Maison Francis Kurkdjian|Creed|Acqua di Parma
-Disney|LEGO|Mattel|Barbie|Hot Wheels|Fisher-Price|Hasbro|Playmobil|Schleich|Sylvanian Families|Pokémon|Nintendo|Funko|Squishmallows
-`;
-
-const BRAND_LIST=[...new Set(BRANDS.split("|").map(x=>x.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-
-/* =========================
-   UI
-   ========================= */
-
-function renderCategories(){
- const box=document.getElementById("categories");
- box.innerHTML="";
- Object.entries(CATEGORIES).forEach(([name,data])=>{
-   const b=document.createElement("button");
-   b.className="cat";
-   b.innerHTML=`<div class="icon">${data.icon}</div><strong>${name}</strong><small>${Object.keys(data.children).length} sections</small>`;
-   b.onclick=()=>openCategory(name);
-   box.appendChild(b);
- });
-}
-
-function openCategory(name){
- const data=CATEGORIES[name];
- document.getElementById("catTitle").textContent=name;
- const content=document.getElementById("categoryContent");
- content.innerHTML=`
-  <div class="category-path">
-   <button onclick="closeModal('categoryModal')">Home</button> / ${name}
-  </div>
-  <div class="category-list" id="subcats"></div>`;
- const sub=document.getElementById("subcats");
- Object.entries(data.children).forEach(([subname,items])=>{
-   const row=document.createElement("button");
-   row.className="category-row";
-   row.innerHTML=`<span><strong>${subname}</strong><br><small class="muted">${items.length} options</small></span><span>›</span>`;
-   row.onclick=()=>openSubCategory(name,subname,items);
-   sub.appendChild(row);
- });
- document.getElementById("categoryModal").classList.add("show");
-}
-
-function openSubCategory(parent,sub,items){
- const content=document.getElementById("categoryContent");
- content.innerHTML=`
-  <div class="category-path">
-   <button onclick="openCategory('${escapeAttr(parent)}')">${parent}</button> /
-   ${sub}
-  </div>
-  <div class="category-list" id="thirdcats"></div>`;
- const box=document.getElementById("thirdcats");
- items.forEach(item=>{
-  const row=document.createElement("button");
-  row.className="category-row";
-  row.innerHTML=`<span>${item}</span><span>›</span>`;
-  row.onclick=()=>{
-   selectedCategory=`${parent} › ${sub} › ${item}`;
-   document.getElementById("fCategory").value=selectedCategory;
-   closeModal("categoryModal");
-   closeModal("pickerModal");
-  };
-  box.appendChild(row);
- });
-}
-
-function openCategoryPicker(){
- document.getElementById("pickerContent").innerHTML="";
- Object.entries(CATEGORIES).forEach(([name,data])=>{
-  const row=document.createElement("button");
-  row.className="category-row";
-  row.innerHTML=`<span>${data.icon} &nbsp; ${name}</span><span>›</span>`;
-  row.onclick=()=>openPickerSub(name);
-  document.getElementById("pickerContent").appendChild(row);
- });
- document.getElementById("pickerModal").classList.add("show");
-}
-
-function openPickerSub(name){
- const data=CATEGORIES[name];
- const box=document.getElementById("pickerContent");
- box.innerHTML=`<div class="category-path"><button onclick="openCategoryPicker()">‹ Back</button> / ${name}</div>`;
- Object.entries(data.children).forEach(([sub,items])=>{
-  const row=document.createElement("button");
-  row.className="category-row";
-  row.innerHTML=`<span>${sub}</span><span>›</span>`;
-  row.onclick=()=>{
-   selectedCategory=`${name} › ${sub}`;
-   document.getElementById("fCategory").value=selectedCategory;
-   closeModal("pickerModal");
-  };
-  box.appendChild(row);
- });
-}
-
-function searchBrands(q){
- const box=document.getElementById("brandResults");
- const term=(q||"").toLowerCase().trim();
- const arr=term?BRAND_LIST.filter(b=>b.toLowerCase().includes(term)):BRAND_LIST.slice(0,80);
- box.innerHTML="";
- arr.slice(0,80).forEach(brand=>{
-  const div=document.createElement("div");
-  div.className="brand-item";
-  div.textContent=brand;
-  div.onclick=()=>{
-   selectedBrand=brand;
-   document.getElementById("brandInput").value=brand;
-   box.style.display="none";
-  };
-  box.appendChild(div);
- });
- box.style.display="block";
-}
-
-document.addEventListener("click",e=>{
- if(!e.target.closest(".brand-wrap"))document.getElementById("brandResults").style.display="none";
-});
-
-function escapeAttr(x){return String(x).replace(/'/g,"\\'")}
-
-function openSell(){
- document.getElementById("sellModal").classList.add("show");
-}
-
-function openAuth(){
- document.getElementById("authModal").classList.add("show");
-}
-
-function closeModal(id){
- document.getElementById(id).classList.remove("show");
-}
-
-/* =========================
-   PHOTO PREVIEW
-   ========================= */
-
-document.getElementById("photos").addEventListener("change",e=>{
- const box=document.getElementById("preview");
- box.innerHTML="";
- [...e.target.files].slice(0,8).forEach(file=>{
-  const img=document.createElement("img");
-  img.src=URL.createObjectURL(file);
-  box.appendChild(img);
- });
-});
-
-/* =========================
-   AUTH
-   ========================= */
-
-async function signUp(){
- const email=document.getElementById("authEmail").value.trim();
- const password=document.getElementById("authPassword").value;
- if(!email||!password)return status("Enter email and password.");
- const {error}=await sb.auth.signUp({email,password});
- document.getElementById("authStatus").textContent=error?error.message:"Account created. Check your email if confirmation is required.";
-}
-
-async function signIn(){
- const email=document.getElementById("authEmail").value.trim();
- const password=document.getElementById("authPassword").value;
- const {error}=await sb.auth.signInWithPassword({email,password});
- if(error)status(error.message);
- else{
-  status("Signed in successfully.");
-  setTimeout(()=>closeModal("authModal"),700);
- }
-}
-
-function status(x){document.getElementById("authStatus").textContent=x}
-
-/* =========================
-   PUBLISH
-   ========================= */
-
-async function publishListing(){
- const {data:{user}}=await sb.auth.getUser();
- if(!user){
-  alert("Please sign in first.");
-  openAuth();
-  return;
- }
-
- const title=document.getElementById("fTitle").value.trim();
- const category=document.getElementById("fCategory").value.trim();
- const price=parseFloat(document.getElementById("fPrice").value);
- const description=document.getElementById("fDescription").value.trim();
-
- if(!title||!category||Number.isNaN(price)||!description){
-  alert("Please complete Title, Category, Price and Description.");
-  return;
- }
-
- const files=[...document.getElementById("photos").files].slice(0,8);
- const urls=[];
-
- for(const file of files){
-  const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
-  const path=`${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}_${safe}`;
-
-  const {error}=await sb.storage.from("listing-photos").upload(path,file,{
-   cacheControl:"3600",upsert:false
-  });
-
-  if(error){
-   alert("Photo upload error: "+error.message);
-   return;
-  }
-
-  const {data}=sb.storage.from("listing-photos").getPublicUrl(path);
-  urls.push(data.publicUrl);
- }
-
- const payload={
-  seller_id:user.id,
-  title,
-  category,
-  price,
-  condition:document.getElementById("fCondition").value||null,
-  size:document.getElementById("fSize").value.trim()||null,
-  brand:selectedBrand||document.getElementById("brandInput").value.trim()||null,
-  color:document.getElementById("fColor").value.trim()||null,
-  material:document.getElementById("fMaterial").value.trim()||null,
-  measurements:document.getElementById("fMeasurements").value.trim()||null,
-  origin:document.getElementById("fOrigin").value.trim()||null,
-  description,
-  photos:urls,
-  status:"active"
- };
-
- const {error}=await sb.from("listings").insert(payload);
-
- if(error){
-  alert("Publish error: "+error.message);
-  console.error(error);
-  return;
- }
-
- alert("Your FYND has been published! 💚");
- closeModal("sellModal");
- clearSell();
- loadListings();
-}
-
-function clearSell(){
- ["fTitle","fCategory","fPrice","fSize","brandInput","fColor","fMaterial","fMeasurements","fOrigin","fDescription"].forEach(id=>{
-  document.getElementById(id).value="";
- });
- document.getElementById("photos").value="";
- document.getElementById("preview").innerHTML="";
- selectedBrand="";
- selectedCategory="";
-}
-
-/* =========================
-   LISTINGS
-   ========================= */
-
-async function loadListings(search=""){
- let query=sb.from("listings")
-  .select("*")
-  .eq("status","active")
-  .order("created_at",{ascending:false})
-  .limit(40);
-
- const {data,error}=await query;
-
- if(error){
-  console.error(error);
-  document.getElementById("listings").innerHTML=
-   `<div class="empty">Could not load FYNDs.<br><small>${error.message}</small></div>`;
-  return;
- }
-
- let rows=data||[];
-
- if(search){
-  const s=search.toLowerCase();
-  rows=rows.filter(x=>
-   [x.title,x.brand,x.category,x.description,x.origin]
-   .filter(Boolean).join(" ").toLowerCase().includes(s)
-  );
- }
-
- document.getElementById("count").textContent=`${rows.length} FYNDs`;
-
- const box=document.getElementById("listings");
-
- if(!rows.length){
-  box.innerHTML=`<div class="empty">No FYNDs found yet.</div>`;
-  return;
- }
-
- box.innerHTML=rows.map(item=>{
-  const photos=Array.isArray(item.photos)?item.photos:[];
-  const img=photos[0]||"";
-  return `
-   <article class="card">
-    ${img?`<img src="${img}" alt="">`:`<div style="aspect-ratio:1;background:#191b20;display:grid;place-items:center;color:#666">MYFYNDA</div>`}
-    <div class="card-body">
-     <div class="price">€${Number(item.price||0).toFixed(2)}</div>
-     <strong>${escapeHtml(item.title)}</strong>
-     <div class="muted">${escapeHtml(item.brand||"Unbranded")}</div>
-     <div class="muted">${escapeHtml(item.category||"")}</div>
-    </div>
-   </article>`;
- }).join("");
-}
-
-function escapeHtml(x){
- return String(x).replace(/[&<>"']/g,m=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
- }[m]));
-}
-
-function showAll(){
- document.getElementById("mainSearch").value="";
- loadListings();
-}
-
-document.getElementById("mainSearch").addEventListener("input",e=>{
- loadListings(e.target.value);
-});
-
-/* =========================
-   START
-   ========================= */
-
-renderCategories();
-loadListings();
-
-sb.auth.onAuthStateChange((_event,session)=>{
- console.log("MYFYNDA auth:",!!session);
-});
-</script>
 </body>
 </html>
