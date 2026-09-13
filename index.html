@@ -669,6 +669,29 @@ Turn your fashion, vintage pieces and collectibles into someone else's next disc
 </div>
 
 </footer>
+<script>
+document.querySelectorAll('.heart').forEach(function(heart, index) {
+  const key = 'myfynda_wishlist_' + index;
 
+  if (localStorage.getItem(key) === 'true') {
+    heart.textContent = '♥';
+  }
+
+  heart.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const saved = localStorage.getItem(key) === 'true';
+
+    if (saved) {
+      localStorage.removeItem(key);
+      heart.textContent = '♡';
+    } else {
+      localStorage.setItem(key, 'true');
+      heart.textContent = '♥';
+    }
+  });
+});
+</script>
 </body>
 </html>
