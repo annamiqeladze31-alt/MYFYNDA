@@ -692,6 +692,226 @@ document.querySelectorAll('.heart').forEach(function(heart, index) {
     }
   });
 });
+  <script>
+(function () {
+  const BAG_KEY = "myfynda_bag";
+  let bag = JSON.parse(localStorage.getItem(BAG_KEY) || "[]");
+
+  function saveBag() {
+    localStorage.setItem(BAG_KEY, JSON.stringify(bag));
+  }
+
+  function getProductData(card) {
+    return {
+      title: card.querySelector(".name")?.textContent.trim() || "MYFYNDA Find",
+      brand: card.querySelector(".brand")?.textContent.trim() || "MYFYNDA",
+      price: card.querySelector(".price")?.textContent.trim() || "€0",
+      image: card.querySelector("img")?.src || ""
+    };
+  }
+
+  function addToBag(product) {
+    bag.push(product);
+    saveBag();
+    showBagMessage();
+  }
+
+  function showBagMessage() {
+    const old = document.getElementById("myfynda-bag-message");
+    if (old) old.remove();
+
+    const msg = document.createElement("div");
+    msg.id = "myfynda-bag-message";
+    msg.textContent = "Added to bag ✓";
+
+    msg.style.cssText = `
+      position:fixed;
+      bottom:25px;
+      right:25px;
+      z-index:10000;
+      background:#c8ff00;
+      color:#080808;
+      padding:15px 22px;
+      font-weight:900;
+      font-size:12px;
+      text-transform:uppercase;
+      box-shadow:0 8px 30px rgba(0,0,0,.2);
+    `;
+
+    document.body.appendChild(msg);
+
+    setTimeout(() => msg.remove(), 1800);
+  }
+
+  function openBag() {
+    const old = document.getElementById("myfynda-bag-modal");
+    if (old) old.remove();
+
+    const total = bag.reduce((sum, item) => {
+      return sum + (parseFloat(String(item.price).replace(/[^\d.]/g, "")) || 0);
+    }, 0);
+
+    const modal = document.createElement("div");
+    modal.id = "myfynda-bag-modal";
+
+    modal.innerHTML = `
+      <div style="
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.72);
+        z-index:9999;
+        display:flex;
+        justify-content:flex-end;
+      ">
+        <div style="
+          width:min(480px,100%);
+          height:100%;
+          background:#f5f1e8;
+          padding:25px;
+          overflow:auto;
+        ">
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:30px;
+          ">
+            <h2 style="margin:0;font-size:32px;">YOUR BAG</h2>
+            <button id="close-bag" style="
+              border:0;
+              background:#fff;
+              width:40px;
+              height:40px;
+              border-radius:50%;
+              font-size:22px;
+            ">×</button>
+          </div>
+
+          ${
+            bag.length
+            ? bag.map((item, index) => `
+              <div style="
+                display:flex;
+                gap:14px;
+                padding:15px 0;
+                border-bottom:1px solid #d5d0c6;
+              ">
+                <img src="${item.image}" style="
+                  width:85px;
+                  height:105px;
+                  object-fit:cover;
+                ">
+
+                <div style="flex:1;">
+                  <div style="
+                    font-size:9px;
+                    color:#77736b;
+                    text-transform:uppercase;
+                    letter-spacing:.12em;
+                  ">${item.brand}</div>
+
+                  <div style="margin:7px 0;font-size:14px;">
+                    ${item.title}
+                  </div>
+
+                  <strong>${item.price}</strong>
+
+                  <button data-remove="${index}" style="
+                    display:block;
+                    margin-top:12px;
+                    border:0;
+                    background:none;
+                    padding:0;
+                    text-decoration:underline;
+                    font-size:10px;
+                    cursor:pointer;
+                  ">REMOVE</button>
+                </div>
+              </div>
+            `).join("")
+            : `
+              <div style="
+                text-align:center;
+                padding:80px 20px;
+                color:#77736b;
+              ">
+                YOUR BAG IS EMPTY.
+              </div>
+            `
+          }
+
+          ${
+            bag.length
+            ? `
+              <div style="
+                margin-top:30px;
+                display:flex;
+                justify-content:space-between;
+                font-size:18px;
+                font-weight:bold;
+              ">
+                <span>TOTAL</span>
+                <span>€${total.toFixed(2)}</span>
+              </div>
+
+              <button style="
+                width:100%;
+                margin-top:20px;
+                padding:17px;
+                background:#c8ff00;
+                border:0;
+                font-weight:900;
+                cursor:pointer;
+                text-transform:uppercase;
+              ">
+                CHECKOUT
+              </button>
+            `
+            : ""
+          }
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById("close-bag").onclick = () => modal.remove();
+
+    modal.querySelectorAll("[data-remove]").forEach(button => {
+      button.onclick = function () {
+        bag.splice(Number(this.dataset.remove), 1);
+        saveBag();
+        modal.remove();
+        openBag();
+      };
+    });
+  }
+
+  // Product cards
+  document.querySelectorAll(".product").forEach(card => {
+    card.addEventListener("click", function (e) {
+      if (e.target.closest(".heart")) return;
+
+      const product = getProductData(card);
+
+      if (confirm("Add this item to your bag?")) {
+        addToBag(product);
+      }
+    });
+  });
+
+  // Existing Bag link
+  document.querySelectorAll("a").forEach(link => {
+    if (link.textContent.trim().toLowerCase() === "bag") {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        openBag();
+      });
+    }
+  });
+
+})();
+</script>
 </script>
 </body>
 </html>
