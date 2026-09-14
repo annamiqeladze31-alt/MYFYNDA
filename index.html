@@ -1174,6 +1174,52 @@ document.addEventListener("click", async function(e) {
   });
 
 <script>
+document.addEventListener("click", async function(e){
+
+  if(e.target.textContent.trim().toUpperCase() !== "CHECKOUT") return;
+
+  const bag = JSON.parse(localStorage.getItem("myfynda_bag") || "[]");
+
+  if(!bag.length){
+    alert("Your bag is empty.");
+    return;
+  }
+1187 </body>
+1188 </html>
+  const total = bag.reduce(function(sum,item){
+    return sum + (parseFloat(String(item.price).replace(/[^\d.]/g,"")) || 0);
+  },0);
+
+  try {
+    const response = await fetch(
+      "https://yitylprqnzjjbhamujzt.supabase.co/rest/v1/orders",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": "sb_publishable_e7jx7UvFN7Dxfv59oZnh_g_Qb-QWYFr",
+          "Prefer": "return=representation"
+        },
+        body: JSON.stringify({
+          total: total,
+          status: "pending",
+          items: bag
+        })
+      }
+    );
+
+    if(!response.ok) throw new Error();
+
+    alert("ORDER CREATED ❤️");
+    localStorage.removeItem("myfynda_bag");
+    location.reload();
+
+  } catch(error) {
+    alert("Order could not be created.");
+  }
+
+});
+</script>
 document.addEventListener("click",function(e){
 if(e.target.textContent.trim().toUpperCase()!=="CHECKOUT")return;
 const bag=JSON.parse(localStorage.getItem("myfynda_bag")||"[]");
