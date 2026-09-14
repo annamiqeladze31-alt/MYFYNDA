@@ -1173,7 +1173,15 @@ document.addEventListener("click", async function(e) {
     }
   });
 
-})();
+<script>
+document.addEventListener("click",function(e){
+if(e.target.textContent.trim().toUpperCase()!=="CHECKOUT")return;
+const bag=JSON.parse(localStorage.getItem("myfynda_bag")||"[]");
+if(!bag.length)return alert("Your bag is empty.");
+alert("ORDER CREATED SUCCESSFULLY ❤️");
+localStorage.removeItem("myfynda_bag");
+});
+</script>})();
 </script>
 </script>
 </body>
